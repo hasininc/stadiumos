@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # GKE Core API Backend Service
+  fastapi-service:
+    build:
+      context: .
+      dockerfile: backend/fastapi-service/Dockerfile
+    container_name: stadiumos-fastapi-service
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://stadiumos_app_user:local_dev_password_change_me@postgres:5432/stadiumos_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SECRET_KEY=local_dev_password_change_me
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    user: "10001:10001"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # AI Orchestrator Gateway Service
+  ai-orchestrator:
+    build:
+      context: .
+      dockerfile: ai/ai-orchestrator/Dockerfile
+    container_name: stadiumos-ai-orchestrator
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    user: "10001:10001"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Machine Learning Analytics Predictor Service
+  ml-service:
+    build:
+      context: .
+      dockerfile: ml/ml-service/Dockerfile
+    container_name: stadiumos-ml-service
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    user: "10001:10001"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Edge Computer Vision Processing Service
+  cv-service:
+    build:
+      context: .
+      dockerfile: cv/cv-service/Dockerfile
+    container_name: stadiumos-cv-service
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    user: "10001:10001"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Executive NGINX Operations Dashboard Front
+  ops-dashboard:
+    build:
+      context: .
+      dockerfile: frontend/ops-dashboard/Dockerfile
+    container_name: stadiumos-ops-dashboard
+    ports:
+      - "5001:80"
+    depends_on:
+      - fastapi-service
+    security_opt:
+      - no-new-privileges:true
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

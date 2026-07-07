@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from app.repositories.user import UserRepository
 from app.models.auth import User, RefreshToken, Role
 from app.schemas.auth import UserCreate, LoginRequest, TokenResponse, ResetPasswordRequest
-from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_token
+from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_token, create_reset_token
 from app.core.config import settings
 from shared.utils.error_handlers import ValidationError, AuthorizationError
 import logging
@@ -103,3 +103,22 @@ class AuthService:
         db_token = self.repo.get_refresh_token(refresh_token_str)
         if db_token:
             self.repo.revoke_refresh_token(db_token)
+
+    def generate_password_reset_token(self, email: str) -> str:
+        user = self.repo.get_by_email(email)
+        if not user:
+            raise ValidationError("No account registered with this email address.")
+        return create_reset_token(subject=user.id)
+
+    def reset_user_password(self, req: ResetPasswordRequest) -> None:
+        payload = decode_token(req.token)
+        if not payload or payload.get("type") != "reset":
+            raise ValidationError("Invalid or expired password reset token.")
+        
+        user_id = payload.get("sub")
+        user = self.repo.get_by_id(user_id)
+        if not user:
+            raise ValidationError("User not found.")
+            
+        user.password_hash = get_password_hash(req.new_password)
+        self.repo.db.commit()

@@ -56,11 +56,13 @@ def get_me(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/forgot-password", status_code=status.HTTP_200_OK)
-def forgot_password(req: ForgotPasswordRequest):
-    # Mocking email notification system trigger
-    return {"message": "Recovery verification email has been dispatched"}
+def forgot_password(req: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    service = AuthService(db)
+    token = service.generate_password_reset_token(req.email)
+    return {"message": "Recovery verification email has been dispatched", "token_fallback_dev": token}
 
 @router.post("/reset-password", status_code=status.HTTP_200_OK)
-def reset_password(req: ResetPasswordRequest):
-    # Mocking password update logic
+def reset_password(req: ResetPasswordRequest, db: Session = Depends(get_db)):
+    service = AuthService(db)
+    service.reset_user_password(req)
     return {"message": "Password credentials reset successfully"}
