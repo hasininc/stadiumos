@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors
+from app.core.security_layer import SecureHeadersMiddleware
 from app.db.session import engine, Base
 from shared.utils.error_handlers import ApplicationError
 import logging
@@ -25,6 +26,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Global Zero-Trust Secure Headers and Rate Limiter Middleware
+app.add_middleware(SecureHeadersMiddleware)
 
 # Exception handlers mapping
 @app.exception_handler(ApplicationError)
