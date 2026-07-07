@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.api.v1.endpoints import auth
+from app.api.v1.endpoints import auth, users
 from app.db.session import engine, Base
 from shared.utils.error_handlers import ApplicationError
 import logging
@@ -45,6 +45,7 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 # Routers mounting
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(users.router, prefix=f"{settings.API_V1_STR}/users", tags=["users"])
 
 @app.get("/health")
 def health_check():
