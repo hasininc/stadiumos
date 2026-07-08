@@ -47,6 +47,10 @@ export interface OpsState {
   vipArrival: boolean;
   
   wsConnected: boolean;
+  wsLatency: number;
+  wsMsgRate: number;
+  wsLastEvent: string;
+  updateWsMetrics: (metrics: Partial<{ latency: number; msgRate: number; lastEvent: string }>) => void;
   
   // Actions
   evacuationActive: boolean;
@@ -118,7 +122,15 @@ export const useOpsStore = create<OpsState>((set) => ({
   vipArrival: false,
   
   evacuationActive: false,
-  wsConnected: true, // Mock Connected by default for simulator stability
+  wsConnected: false,
+  wsLatency: 0,
+  wsMsgRate: 0,
+  wsLastEvent: 'None',
+  updateWsMetrics: (metrics) => set((state) => ({
+    wsLatency: metrics.latency !== undefined ? metrics.latency : state.wsLatency,
+    wsMsgRate: metrics.msgRate !== undefined ? metrics.msgRate : state.wsMsgRate,
+    wsLastEvent: metrics.lastEvent !== undefined ? metrics.lastEvent : state.wsLastEvent,
+  })),
 
   setWsConnected: (connected) => set({ wsConnected: connected }),
   setCrowdMetrics: (metrics) => set({ crowdMetrics: metrics }),

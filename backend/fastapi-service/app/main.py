@@ -1,12 +1,15 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, status, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import json
+import time
 from app.core.config import settings
 from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors, prediction
 from app.core.security_layer import SecureHeadersMiddleware
 from app.db.session import engine, Base
 from app.db.seed import seed_database
 from shared.utils.error_handlers import ApplicationError
+from app.core.websocket import live_ws_manager
 import logging
 
 # Ensure database tables exist (Development fallbacks)
@@ -62,3 +65,28 @@ app.include_router(prediction.router, prefix=f"{settings.API_V1_STR}/predict", t
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.websocket("/ws/live")
+async def websocket_live_endpoint(websocket: WebSocket):
+    await live_ws_manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            try:
+                msg = json.loads(data)
+                msg_type = msg.get("type")
+                if msg_type == "ping":
+                    await websocket.send_json({"type": "pong", "timestamp": time.time()})
+                elif msg_type == "SimulationStarted":
+                    await live_ws_manager.start_simulation()
+                    await live_ws_manager.broadcast({"type": "SimulationStarted", "data": {}})
+                elif msg_type == "SimulationStopped":
+                    await live_ws_manager.stop_simulation()
+                    await live_ws_manager.broadcast({"type": "SimulationStopped", "data": {}})
+                elif msg_type == "SimulationReset":
+                    await live_ws_manager.broadcast({"type": "SimulationReset", "data": {}})
+            except Exception:
+                await websocket.send_json({"pong": True, "received": data})
+    except WebSocketDisconnect:
+        await live_ws_manager.disconnect(websocket)
+        logger.info("Live WebSocket client disconnected")

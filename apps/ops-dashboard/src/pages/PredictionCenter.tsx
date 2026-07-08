@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useOpsStore } from '../store/opsStore';
+import { useCrowdPrediction } from '../hooks/useCrowdPrediction';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
@@ -53,17 +54,9 @@ const queueTimeTrendData = [
   { time: 'Live', gateA: 12, gateB: 48, gateC: 29, gateD: 14 },
 ];
 
-const emergencyRiskData = [
-  { time: '17:00', heatRisk: 10, crowdRisk: 15, equipmentRisk: 5 },
-  { time: '17:15', heatRisk: 18, crowdRisk: 25, equipmentRisk: 5 },
-  { time: '17:30', heatRisk: 30, crowdRisk: 42, equipmentRisk: 12 },
-  { time: '17:45', heatRisk: 45, crowdRisk: 60, equipmentRisk: 18 },
-  { time: '18:00', heatRisk: 55, crowdRisk: 82, equipmentRisk: 22 },
-  { time: 'Live', heatRisk: 68, crowdRisk: 89, equipmentRisk: 15 },
-];
-
 export const PredictionCenter: React.FC = () => {
   const store = useOpsStore();
+  const { prediction, isLoading, error, history, retry, inputPayload } = useCrowdPrediction();
   
   // What-If parameters bound directly to global store
   const sliderAttendance = store.attendance;
@@ -81,57 +74,9 @@ export const PredictionCenter: React.FC = () => {
   const setVipArrival = (val: boolean) => store.updateWhatIf({ vipArrival: val });
 
   // ──────────────────────────────────────────────
-  // Dynamic Live Input Features (Flips every 4s)
+  // Fallback calculations if API is offline
   // ──────────────────────────────────────────────
-  const [liveFeatures, setLiveFeatures] = useState({
-    entryRate: 450,
-    exitRate: 15,
-    parkingOccupancy: 81,
-    metroRate: 720,
-    busRate: 310,
-    scanRate: 192,
-    securityQueue: 24,
-    medicalIncidents: 2,
-    foodCourtDensity: 74,
-    restroomDensity: 62,
-  });
-
-  const [inferenceTime, setInferenceTime] = useState(28);
-  const [lastUpdated, setLastUpdated] = useState(0);
-
-  // Auto update live variables slightly to simulate streaming data
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLiveFeatures((prev) => ({
-        entryRate: Math.max(100, Math.min(1000, prev.entryRate + Math.round((Math.random() - 0.5) * 40))),
-        exitRate: Math.max(2, Math.min(100, prev.exitRate + Math.round((Math.random() - 0.5) * 6))),
-        parkingOccupancy: Math.max(50, Math.min(100, prev.parkingOccupancy + Math.round((Math.random() - 0.5) * 2))),
-        metroRate: Math.max(200, Math.min(1500, prev.metroRate + Math.round((Math.random() - 0.5) * 60))),
-        busRate: Math.max(50, Math.min(600, prev.busRate + Math.round((Math.random() - 0.5) * 20))),
-        scanRate: Math.max(80, Math.min(300, prev.scanRate + Math.round((Math.random() - 0.5) * 15))),
-        securityQueue: Math.max(5, Math.min(100, prev.securityQueue + Math.round((Math.random() - 0.5) * 4))),
-        medicalIncidents: Math.max(0, Math.min(8, prev.medicalIncidents + (Math.random() > 0.85 ? (Math.random() > 0.5 ? 1 : -1) : 0))),
-        foodCourtDensity: Math.max(30, Math.min(99, prev.foodCourtDensity + Math.round((Math.random() - 0.5) * 4))),
-        restroomDensity: Math.max(20, Math.min(95, prev.restroomDensity + Math.round((Math.random() - 0.5) * 5))),
-      }));
-      setInferenceTime(Math.round(24 + Math.random() * 8));
-      setLastUpdated(0);
-    }, 4000);
-
-    const secondsCounter = setInterval(() => {
-      setLastUpdated((prev) => prev + 1);
-    }, 1000);
-
-    return () => {
-      clearInterval(interval);
-      clearInterval(secondsCounter);
-    };
-  }, []);
-
-  // ──────────────────────────────────────────────
-  // Math Model Projection (Reactions to Sliders)
-  // ──────────────────────────────────────────────
-  const congestionRisk = Math.min(
+  const localCongestionScore = Math.min(
     100,
     Math.max(
       10,
@@ -145,7 +90,7 @@ export const PredictionCenter: React.FC = () => {
     )
   );
 
-  const avgQueueTime = Math.min(
+  const localQueueTime = Math.min(
     60,
     Math.max(
       2,
@@ -158,73 +103,28 @@ export const PredictionCenter: React.FC = () => {
     )
   );
 
-  const projectedAttendance = Math.round(
-    sliderAttendance + (vipArrival ? 150 : 0) - (heavyRain ? 1200 : 0)
-  );
+  // Active metrics resolved from Live prediction or fallback local models
+  const congestionRisk = prediction ? prediction.congestion_score : localCongestionScore;
+  const avgQueueTime = prediction ? prediction.queue_prediction : localQueueTime;
+  const predictionConfidence = prediction ? Math.round(prediction.confidence * 100) : 95;
+  const riskLevel = prediction ? prediction.risk_level : (congestionRisk > 80 ? 'CRITICAL' : congestionRisk > 60 ? 'HIGH' : 'MEDIUM');
 
-  const emergencyRisk = Math.min(
-    100,
-    Math.max(
-      5,
-      Math.round(
-        (sliderAttendance / 80000) * 22 +
-          (heavyRain ? 25 : 0) +
-          (closeGateC ? 12 : 0) -
-          (sliderSecurity - 300) * 0.04
-      )
-    )
-  );
-
-  const gateSaturation = Math.min(
-    100,
-    Math.max(
-      10,
-      Math.round(
-        (sliderAttendance / 80000) * 82 * (100 / sliderGateCap) +
-          (closeGateC ? 18 : 0)
-      )
-    )
-  );
-
-  const predictionConfidence = Math.min(
-    99.8,
-    Math.max(
-      75.0,
-      parseFloat(
-        (
-          96.4 -
-          (closeGateC ? 4.1 : 0) -
-          (heavyRain ? 3.2 : 0) +
-          (sliderSecurity > 350 ? 1.5 : 0)
-        ).toFixed(1)
-      )
-    )
-  );
-
-  // Explainable AI Weight Shares
-  const densityWeight = Math.round(31 + (sliderAttendance > 75000 ? 6 : 0) + (heavyRain ? -4 : 0));
-  const ticketWeight = Math.round(24 - (sliderGateCap < 80 ? 6 : 0));
-  const weatherWeight = heavyRain ? 35 : 12;
-  const metroWeight = Math.round(12 + (closeGateC ? 6 : 0));
-  const minuteWeight = 9;
-  const otherWeight = 100 - (densityWeight + ticketWeight + weatherWeight + metroWeight + minuteWeight);
-
-  // Dynamic explanation compiler
+  // Dynamic explanation compiler based on variables
   const getAIExplanation = () => {
     let explanation = '';
     if (closeGateC && sliderAttendance > 74000) {
       explanation = `Closing Gate C routes flow onto Gate B. High occupancy (${sliderAttendance.toLocaleString()} spectators) triggers a critical saturation warning.`;
     } else if (heavyRain && congestionRisk > 75) {
-      explanation = `Severe storm conditions reduce scanning speed to ${Math.round(liveFeatures.scanRate * 0.7)} ticket scans/min. Large queue bottlenecks forming near underpass corridors.`;
+      explanation = `Severe storm conditions reduce scanning speed. Large queue bottlenecks forming near underpass corridors.`;
     } else if (congestionRisk > 80) {
-      explanation = `Extreme crowd density coupled with current entry rate (${liveFeatures.entryRate} people/min) projects Gate B and A corridors to exceed standard safety bounds within 12 minutes.`;
+      explanation = `Extreme crowd density projects Gate B and A corridors to exceed standard safety bounds within 12 minutes.`;
     } else {
-      explanation = `Operations margins stable. Volunteer support and metro arrival rate (${liveFeatures.metroRate} people/min) are maintaining wait times under 15 minutes.`;
+      explanation = `Operations margins stable. Volunteer support is maintaining wait times under 15 minutes.`;
     }
     return explanation;
   };
 
-  // AI recommendations based on projection values
+  // AI recommendations based on live metrics
   const getAIRecommendations = () => {
     const recs = [];
     if (congestionRisk > 75) {
@@ -263,24 +163,6 @@ export const PredictionCenter: React.FC = () => {
       color: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
     });
 
-    if (emergencyRisk > 50) {
-      recs.push({
-        title: 'Deploy Medic Standby Squad 3',
-        priority: 'HIGH',
-        impact: '-3 min response speed',
-        confidence: '94%',
-        color: 'text-red-400 bg-red-500/10 border-red-500/20',
-      });
-    }
-
-    recs.push({
-      title: 'Notify Transport Authority (Extra trains)',
-      priority: 'LOW',
-      impact: '+6 metro carriages',
-      confidence: '92%',
-      color: 'text-[#C6BADE] bg-[#C6BADE]/10 border-[#C6BADE]/20',
-    });
-
     return recs;
   };
 
@@ -295,7 +177,7 @@ export const PredictionCenter: React.FC = () => {
               AI Crowd Prediction Center
             </h4>
             <span className="bg-[#C6BADE]/10 border border-[#C6BADE]/30 text-[#C6BADE] font-bold text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full">
-              CrowdNet v2.1
+              FastAPI ML Service
             </span>
           </div>
           <p className="text-xs text-[#94A3B8] mt-1 font-semibold uppercase tracking-wider">
@@ -306,8 +188,10 @@ export const PredictionCenter: React.FC = () => {
         {/* Model Meta stats */}
         <div className="flex flex-wrap items-center gap-4 bg-white/[0.02] border border-white/5 px-6 py-3 rounded-2xl backdrop-blur-md text-xs">
           <div className="flex items-center space-x-2 border-r border-white/10 pr-4">
-            <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Inference:</span>
-            <span className="font-mono text-white font-bold">{inferenceTime}ms</span>
+            <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">ML SERVICE:</span>
+            <span className={`font-bold uppercase ${error ? 'text-red-400' : 'text-emerald-400'}`}>
+              {error ? 'OFFLINE' : 'LIVE'}
+            </span>
           </div>
           <div className="flex items-center space-x-2 border-r border-white/10 pr-4">
             <span className="text-gray-400 font-bold uppercase tracking-wider text-[10px]">Confidence:</span>
@@ -315,13 +199,12 @@ export const PredictionCenter: React.FC = () => {
           </div>
           <div className="flex items-center space-x-2 pr-2">
             <Clock className="w-3.5 h-3.5 text-[#F7B9C4]" />
-            <span className="font-mono text-[#94A3B8]">{lastUpdated}s ago</span>
+            <span className="font-mono text-[#94A3B8]">
+              {prediction ? new Date(prediction.timestamp).toLocaleTimeString() : 'Local fallback'}
+            </span>
           </div>
           <button
-            onClick={() => {
-              setInferenceTime(Math.round(22 + Math.random() * 5));
-              setLastUpdated(0);
-            }}
+            onClick={() => retry()}
             className="p-1.5 hover:bg-white/5 rounded-lg transition-all"
             title="Force inference check"
           >
@@ -329,6 +212,22 @@ export const PredictionCenter: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Connection Failure retry alert bar */}
+      {error && (
+        <div className="p-4 bg-red-950/45 border border-red-500/25 rounded-2xl flex justify-between items-center text-xs text-red-200">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+            <span><strong>Prediction Service Offline</strong> - Displaying cached math projection values.</span>
+          </div>
+          <button
+            onClick={() => retry()}
+            className="px-4 py-1.5 bg-red-500/20 border border-red-500/30 rounded-xl hover:bg-red-500/30 font-bold transition-all uppercase tracking-wider text-[9px]"
+          >
+            Retry Connection
+          </button>
+        </div>
+      )}
 
       {/* Main Layout Grid: Left content block (Sections 1-4) | Right sidebar panel (Recommendations) */}
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-8">
@@ -434,196 +333,144 @@ export const PredictionCenter: React.FC = () => {
               </div>
             </div>
 
-            {/* SECTION 2: ML predictions */}
-            <div className="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col justify-between">
+            {/* SECTION 2: ML predictions Card */}
+            <div className="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col justify-between relative overflow-hidden">
               <div className="flex items-center space-x-2 border-b border-white/5 pb-3">
                 <Cpu className="w-4 h-4 text-[#C6BADE]" />
-                <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider">Projected Output Predictions</span>
+                <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider">Live Model Predictions</span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                {/* Congestion risk */}
-                <div>
-                  <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Congestion Risk</div>
-                  <div className="text-lg font-extrabold text-white mt-1 font-mono">{congestionRisk}%</div>
-                  <div className="w-full bg-white/5 rounded-full h-1 mt-1.5">
-                    <div
-                      className={`h-1 rounded-full ${congestionRisk > 75 ? 'bg-red-500' : congestionRisk > 45 ? 'bg-orange-500' : 'bg-emerald-500'}`}
-                      style={{ width: `${congestionRisk}%` }}
-                    />
-                  </div>
+              {isLoading ? (
+                <div className="space-y-4 py-8 animate-pulse">
+                  <div className="h-4 bg-white/5 rounded w-3/4" />
+                  <div className="h-8 bg-white/5 rounded w-1/2" />
+                  <div className="h-4 bg-white/5 rounded w-5/6" />
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    {/* Congestion risk */}
+                    <div>
+                      <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Congestion score</div>
+                      <div className="text-lg font-extrabold text-white mt-1 font-mono">{congestionRisk}%</div>
+                      <div className="w-full bg-white/5 rounded-full h-1 mt-1.5">
+                        <div
+                          className={`h-1 rounded-full ${congestionRisk > 75 ? 'bg-red-500' : congestionRisk > 45 ? 'bg-orange-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${congestionRisk}%` }}
+                        />
+                      </div>
+                    </div>
 
-                {/* Queue time */}
-                <div>
-                  <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Queue Time</div>
-                  <div className="text-lg font-extrabold text-white mt-1 font-mono">{avgQueueTime} min</div>
-                  <div className="w-full bg-white/5 rounded-full h-1 mt-1.5">
-                    <div
-                      className="bg-[#DE638A] h-1 rounded-full"
-                      style={{ width: `${(avgQueueTime / 60) * 100}%` }}
-                    />
-                  </div>
-                </div>
+                    {/* Queue time */}
+                    <div>
+                      <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Queue time forecast</div>
+                      <div className="text-lg font-extrabold text-white mt-1 font-mono">{avgQueueTime} min</div>
+                      <div className="w-full bg-white/5 rounded-full h-1 mt-1.5">
+                        <div
+                          className="bg-[#DE638A] h-1 rounded-full"
+                          style={{ width: `${(avgQueueTime / 60) * 100}%` }}
+                        />
+                      </div>
+                    </div>
 
-                {/* Saturation */}
-                <div>
-                  <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Gate Saturation</div>
-                  <div className="text-lg font-extrabold text-white mt-1 font-mono">{gateSaturation}%</div>
-                  <div className="w-full bg-white/5 rounded-full h-1 mt-1.5">
-                    <div
-                      className="bg-[#F7B9C4] h-1 rounded-full"
-                      style={{ width: `${gateSaturation}%` }}
-                    />
-                  </div>
-                </div>
+                    {/* Saturation */}
+                    <div>
+                      <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Risk level</div>
+                      <div className={`text-md font-extrabold mt-1 font-mono ${riskLevel === 'CRITICAL' ? 'text-red-400' : riskLevel === 'HIGH' ? 'text-orange-400' : 'text-[#C6BADE]'}`}>
+                        {riskLevel}
+                      </div>
+                    </div>
 
-                {/* Medical risk */}
-                <div>
-                  <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Emergency Index</div>
-                  <div className="text-lg font-extrabold text-white mt-1 font-mono">{emergencyRisk}%</div>
-                  <div className="w-full bg-white/5 rounded-full h-1 mt-1.5">
-                    <div
-                      className="bg-amber-500 h-1 rounded-full"
-                      style={{ width: `${emergencyRisk}%` }}
-                    />
+                    {/* Confidence */}
+                    <div>
+                      <div className="flex justify-between text-[10px] text-gray-400 uppercase font-semibold">Inference Confidence</div>
+                      <div className="text-lg font-extrabold text-white mt-1 font-mono">{predictionConfidence}%</div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="border-t border-white/5 pt-3 mt-4 grid grid-cols-3 gap-2 text-[9.5px] text-[#94A3B8] font-mono">
-                <div>
-                  <span>Horizon:</span>
-                  <span className="text-white block font-bold">15-45 min</span>
-                </div>
-                <div>
-                  <span>Peak Influx:</span>
-                  <span className="text-white block font-bold">18:25 (HT)</span>
-                </div>
-                <div>
-                  <span>Confidence:</span>
-                  <span className="text-white block font-bold">{predictionConfidence}%</span>
-                </div>
-              </div>
+                  <div className="border-t border-white/5 pt-3 mt-4 grid grid-cols-2 gap-2 text-[9.5px] text-[#94A3B8] font-mono">
+                    <div>
+                      <span>Prediction horizon:</span>
+                      <span className="text-white block font-bold">15-45 minutes</span>
+                    </div>
+                    <div>
+                      <span>Timestamp:</span>
+                      <span className="text-white block font-bold truncate">
+                        {prediction ? new Date(prediction.timestamp).toLocaleTimeString() : 'Local simulation'}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
           </div>
 
-          {/* SECTION 1: Live Input Features (Streaming data) */}
+          {/* SECTION 1: Live Input Features (Payload overview) */}
           <div className="glass-panel p-6 rounded-2xl border border-white/5">
-            <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-widest block mb-4">Streaming Live Features (Inference Inputs)</span>
+            <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-widest block mb-4">Payload Features Sent to FastAPI</span>
             
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-xs">
               <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Attendance</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{projectedAttendance.toLocaleString()}</span>
+                <span className="text-[8px] text-gray-400 uppercase font-semibold block">Attendance</span>
+                <span className="font-extrabold text-white font-mono">{inputPayload.attendance.toLocaleString()}</span>
               </div>
               <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Weather</span>
-                <span className="text-sm font-extrabold text-[#F7B9C4] block mt-1 flex items-center space-x-1">
-                  {heavyRain ? <CloudRain className="w-3.5 h-3.5 text-blue-400" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
-                  <span className="font-mono text-xs">{heavyRain ? 'Storm' : 'Clear'}</span>
-                </span>
+                <span className="text-[8px] text-gray-400 uppercase font-semibold block">Weather</span>
+                <span className="font-extrabold text-white font-mono">{heavyRain ? 'Storm (1.0)' : 'Clear (0.1)'}</span>
               </div>
               <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Entry Ingress</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.entryRate} /m</span>
+                <span className="text-[8px] text-gray-400 uppercase font-semibold block">Entry Rate</span>
+                <span className="font-extrabold text-white font-mono">{inputPayload.entry_rate_per_min} /min</span>
               </div>
               <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Metro Arrival</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.metroRate} /m</span>
+                <span className="text-[8px] text-gray-400 uppercase font-semibold block">Metro Arrivals</span>
+                <span className="font-extrabold text-white font-mono">{inputPayload.metro_arrivals} /min</span>
               </div>
               <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Bus Arrival</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.busRate} /m</span>
-              </div>
-              <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Scan Speed</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.scanRate} /m</span>
-              </div>
-              <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Security Queue</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.securityQueue} people</span>
-              </div>
-              <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Emergency Dispatches</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.medicalIncidents} cases</span>
-              </div>
-              <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Food Court Load</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.foodCourtDensity}%</span>
-              </div>
-              <div className="p-3 bg-white/[0.01] border border-white/[0.03] rounded-xl">
-                <span className="text-[8px] text-gray-400 uppercase font-semibold">Restroom Load</span>
-                <span className="text-sm font-extrabold text-white block mt-1 font-mono">{liveFeatures.restroomDensity}%</span>
+                <span className="text-[8px] text-gray-400 uppercase font-semibold block">Gate Count</span>
+                <span className="font-extrabold text-white font-mono">{inputPayload.gate_open_count} open</span>
               </div>
             </div>
           </div>
 
-          {/* SECTION 3: Explainable AI (Features & Logic summary) */}
+          {/* SECTION 3: Explainable AI */}
           <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-4">
             <div className="flex items-center space-x-2 border-b border-white/5 pb-3">
               <AnomalyIcon className="w-4 h-4 text-[#DE638A]" />
-              <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider">Explainable AI Contribution weights</span>
+              <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider">Explainable AI (Local Contributions)</span>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              
               {/* Contribution chart */}
-              <div className="space-y-2.5">
-                {/* Density weight */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-gray-400 font-mono">
-                    <span>Crowd Density</span>
-                    <span className="text-white font-bold">+{densityWeight}%</span>
+              <div className="space-y-3">
+                {isLoading ? (
+                  <div className="space-y-4 py-4 animate-pulse">
+                    <div className="h-2 bg-white/5 rounded" />
+                    <div className="h-2 bg-white/5 rounded" />
+                    <div className="h-2 bg-white/5 rounded" />
                   </div>
-                  <div className="w-full bg-white/5 rounded-full h-1.5">
-                    <div className="bg-[#DE638A] h-1.5 rounded-full" style={{ width: `${densityWeight}%` }} />
-                  </div>
-                </div>
-
-                {/* Scan speed weight */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-gray-400 font-mono">
-                    <span>Ticket Scan Rate</span>
-                    <span className="text-white font-bold">+{ticketWeight}%</span>
-                  </div>
-                  <div className="w-full bg-white/5 rounded-full h-1.5">
-                    <div className="bg-[#F7B9C4] h-1.5 rounded-full" style={{ width: `${ticketWeight}%` }} />
-                  </div>
-                </div>
-
-                {/* Weather weight */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-gray-400 font-mono">
-                    <span>Weather Interruption</span>
-                    <span className="text-white font-bold">+{weatherWeight}%</span>
-                  </div>
-                  <div className="w-full bg-white/5 rounded-full h-1.5">
-                    <div className="bg-blue-400 h-1.5 rounded-full" style={{ width: `${weatherWeight}%` }} />
-                  </div>
-                </div>
-
-                {/* Metro arrival weight */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-gray-400 font-mono">
-                    <span>Metro Arrivals</span>
-                    <span className="text-white font-bold">+{metroWeight}%</span>
-                  </div>
-                  <div className="w-full bg-white/5 rounded-full h-1.5">
-                    <div className="bg-[#C6BADE] h-1.5 rounded-full" style={{ width: `${metroWeight}%` }} />
-                  </div>
-                </div>
-
-                {/* Other weight */}
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] text-gray-400 font-mono">
-                    <span>Other variables</span>
-                    <span className="text-white font-bold">+{otherWeight}%</span>
-                  </div>
-                  <div className="w-full bg-white/5 rounded-full h-1.5">
-                    <div className="bg-white/20 h-1.5 rounded-full" style={{ width: `${otherWeight}%` }} />
-                  </div>
-                </div>
+                ) : (
+                  (prediction?.top_factors || [
+                    { feature: 'attendance', impact: 57.0 },
+                    { feature: 'rain probability', impact: 16.9 },
+                    { feature: 'security queue length', impact: 10.8 }
+                  ]).map((factor: { feature: string; impact: number }, index: number) => (
+                    <div key={index} className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-gray-400 font-mono capitalize">
+                        <span>{factor.feature}</span>
+                        <span className="text-white font-bold">+{factor.impact.toFixed(1)}%</span>
+                      </div>
+                      <div className="w-full bg-white/5 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full ${index === 0 ? 'bg-[#DE638A]' : index === 1 ? 'bg-[#F7B9C4]' : 'bg-[#C6BADE]'}`}
+                          style={{ width: `${factor.impact}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
 
               {/* Explanatory text log */}
@@ -639,47 +486,35 @@ export const PredictionCenter: React.FC = () => {
                   REASONING MATRIX LOADED SUCCESSFULLY
                 </span>
               </div>
+
             </div>
           </div>
 
-          {/* SECTION 4: Historical Analytics (Multi-Tab Charts) */}
+          {/* SECTION 4: Prediction History Trend Graph */}
           <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-4">
-            <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-widest block">Ingress Forecast & Historical Trends</span>
+            <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-widest block">Model Prediction History Trend</span>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Chart 1: Attendance Growth */}
-              <div className="h-56">
-                <span className="text-[9.5px] text-gray-400 uppercase font-mono font-bold block mb-2">Spectator Ingress Growth</span>
-                <ResponsiveContainer width="100%" height="90%">
-                  <AreaChart data={historicalAttendanceData}>
-                    <defs>
-                      <linearGradient id="colorAttendance" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#DE638A" stopOpacity={0.2}/>
-                        <stop offset="95%" stopColor="#DE638A" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
+            <div className="h-60">
+              {history.length < 2 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center text-xs text-[#94A3B8] border border-dashed border-white/5 rounded-xl">
+                  <span>Awaiting inputs. Move the sliders to generate prediction histories and render the comparison curve.</span>
+                </div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={history.map((h, i) => ({
+                    time: new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    score: h.congestion_score,
+                    queue: h.queue_prediction
+                  }))}>
                     <XAxis dataKey="time" stroke="rgba(255,255,255,0.3)" fontSize={9} />
                     <YAxis stroke="rgba(255,255,255,0.3)" fontSize={9} />
                     <RechartsTooltip contentStyle={{ backgroundColor: '#231634', borderColor: 'rgba(255,255,255,0.1)' }} />
-                    <Area type="monotone" dataKey="attendance" stroke="#DE638A" fillOpacity={1} fill="url(#colorAttendance)" strokeWidth={2} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-
-              {/* Chart 2: Queue Time forecasts */}
-              <div className="h-56">
-                <span className="text-[9.5px] text-gray-400 uppercase font-mono font-bold block mb-2">Gate Wait Times (mins)</span>
-                <ResponsiveContainer width="100%" height="90%">
-                  <LineChart data={queueTimeTrendData}>
-                    <XAxis dataKey="time" stroke="rgba(255,255,255,0.3)" fontSize={9} />
-                    <YAxis stroke="rgba(255,255,255,0.3)" fontSize={9} />
-                    <RechartsTooltip contentStyle={{ backgroundColor: '#231634', borderColor: 'rgba(255,255,255,0.1)' }} />
-                    <Line type="monotone" dataKey="gateA" stroke="#DE638A" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="gateB" stroke="#F7B9C4" strokeWidth={2} dot={false} />
-                    <Line type="monotone" dataKey="gateC" stroke="#C6BADE" strokeWidth={2} dot={false} />
+                    <Legend verticalAlign="top" height={36} />
+                    <Line name="Congestion score (%)" type="monotone" dataKey="score" stroke="#DE638A" strokeWidth={2} />
+                    <Line name="Queue prediction (min)" type="monotone" dataKey="queue" stroke="#C6BADE" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
-              </div>
+              )}
             </div>
           </div>
 

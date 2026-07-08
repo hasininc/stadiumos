@@ -7,6 +7,9 @@ import { Clock, Bell, ShieldAlert, Cpu } from 'lucide-react';
 export const Topbar: React.FC = () => {
   const { user, logout } = useAuth();
   const wsConnected = useOpsStore((state) => state.wsConnected);
+  const wsLatency = useOpsStore((state) => state.wsLatency);
+  const wsMsgRate = useOpsStore((state) => state.wsMsgRate);
+  const wsLastEvent = useOpsStore((state) => state.wsLastEvent);
   const crowdMetrics = useOpsStore((state) => state.crowdMetrics);
   const incidents = useOpsStore((state) => state.incidents);
   const [stadiumName, setStadiumName] = useState('Lusail Stadium');
@@ -78,10 +81,35 @@ export const Topbar: React.FC = () => {
         </div>
         <span className="w-px h-3 bg-white/10" />
         <div className="flex items-center space-x-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+          <span className={`w-1.5 h-1.5 rounded-full ${wsConnected ? 'bg-[#22C55E]' : 'bg-red-500'}`} />
           <span className="text-gray-400">WS:</span>
-          <span className="text-white">MOCK CONNECTED</span>
+          <span className="text-white uppercase">{wsConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
         </div>
+        {wsConnected && (
+          <>
+            <span className="w-px h-3 bg-white/10" />
+            <div className="flex items-center space-x-1.5">
+              <span className={`w-1.5 h-1.5 rounded-full ${wsLatency < 50 ? 'bg-[#22C55E]' : wsLatency < 150 ? 'bg-amber-500' : 'bg-red-400'}`} />
+              <span className="text-gray-400">HEALTH:</span>
+              <span className="text-white uppercase">{wsLatency < 50 ? 'EXCELLENT' : wsLatency < 150 ? 'GOOD' : 'POOR'}</span>
+            </div>
+            <span className="w-px h-3 bg-white/10" />
+            <div className="flex items-center space-x-1.5">
+              <span className="text-gray-400">LATENCY:</span>
+              <span className="font-mono text-white">{wsLatency}ms</span>
+            </div>
+            <span className="w-px h-3 bg-white/10" />
+            <div className="flex items-center space-x-1.5">
+              <span className="text-gray-400">RATE:</span>
+              <span className="font-mono text-white">{wsMsgRate} msg/s</span>
+            </div>
+            <span className="w-px h-3 bg-white/10" />
+            <div className="flex items-center space-x-1.5">
+              <span className="text-gray-400">LAST:</span>
+              <span className="text-[#F7B9C4] max-w-[80px] truncate" title={wsLastEvent}>{wsLastEvent}</span>
+            </div>
+          </>
+        )}
       </div>
 
       <div className="flex items-center space-x-6">

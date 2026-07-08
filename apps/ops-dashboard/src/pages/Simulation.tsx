@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOpsStore } from '../store/opsStore';
+import { wsService } from '../services/websocket';
 import {
   Cpu,
   Play,
@@ -308,6 +309,7 @@ export const Simulation: React.FC = () => {
     setEvacActive(false);
     setToastMessage('Simulation engine state has been reset.');
     store.resetAll();
+    wsService.resetSimulation();
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -374,14 +376,20 @@ export const Simulation: React.FC = () => {
           {/* Status buttons */}
           <div className="flex items-center space-x-2 border-r border-white/10 pr-4">
             <button
-              onClick={() => store.setSimulationStatus('running')}
+              onClick={() => {
+                store.setSimulationStatus('running');
+                wsService.startSimulation();
+              }}
               className={`p-2 rounded-lg transition-all ${simulationStatus === 'running' ? 'bg-[#DE638A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
               title="Resume simulation"
             >
               <Play className="w-4 h-4" />
             </button>
             <button
-              onClick={() => store.setSimulationStatus('paused')}
+              onClick={() => {
+                store.setSimulationStatus('paused');
+                wsService.stopSimulation();
+              }}
               className={`p-2 rounded-lg transition-all ${simulationStatus === 'paused' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
               title="Pause simulation"
             >

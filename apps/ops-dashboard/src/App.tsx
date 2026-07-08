@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useOpsStore } from './store/opsStore';
+import { wsService } from './services/websocket';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -26,6 +27,12 @@ export const App: React.FC = () => {
   const triggerEvent = useOpsStore((state) => state.triggerEvent);
   const notifications = useOpsStore((state) => state.notifications);
   const removeNotification = useOpsStore((state) => state.removeNotification);
+
+  // Initialize live WebSocket loop
+  useEffect(() => {
+    wsService.connect();
+    return () => wsService.disconnect();
+  }, []);
 
   // Central Event Bus Scheduler for Demo Mode
   useEffect(() => {
