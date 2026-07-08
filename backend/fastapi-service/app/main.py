@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
-from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors
+from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors, prediction
 from app.core.security_layer import SecureHeadersMiddleware
 from app.db.session import engine, Base
 from app.db.seed import seed_database
@@ -57,6 +57,7 @@ app.include_router(notifications.router, prefix=f"{settings.API_V1_STR}/notifica
 app.include_router(emergencies.router, prefix=f"{settings.API_V1_STR}/emergencies", tags=["emergencies"])
 app.include_router(navigation.router, prefix=f"{settings.API_V1_STR}/navigation", tags=["navigation"])
 app.include_router(vendors.router, prefix=f"{settings.API_V1_STR}/vendors", tags=["vendors"])
+app.include_router(prediction.router, prefix=f"{settings.API_V1_STR}/predict", tags=["prediction"])
 
 @app.get("/health")
 def health_check():
