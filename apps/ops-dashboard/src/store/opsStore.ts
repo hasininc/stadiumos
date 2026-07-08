@@ -1,37 +1,15 @@
 import { create } from 'zustand';
+import type {
+  CrowdZone,
+  Incident,
+  InventoryItem,
+  AIRecommendation,
+} from '../services/dashboard';
 
-export interface CrowdMetrics {
-  zone_id: string;
-  zone_name: string;
-  occupancy_pct: number;
-  headcount: number;
-  status: string;
-}
-
-export interface EmergencyIncident {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  severity: string;
-  status: string;
-  reported_at: string;
-}
-
-export interface AIRecommendation {
-  agent_name: string;
-  response_text: string;
-  citations?: string[];
-  recommended_actions?: string[];
-}
-
-export interface VendorInventoryLevel {
-  id: string;
-  vendor_id: string;
-  product_id: string;
-  current_stock: number;
-  min_threshold: number;
-}
+export type CrowdMetrics = CrowdZone;
+export type EmergencyIncident = Incident;
+export type VendorInventoryLevel = InventoryItem;
+export type { AIRecommendation };
 
 export interface OpsState {
   crowdMetrics: CrowdMetrics[];
@@ -40,10 +18,13 @@ export interface OpsState {
   inventories: VendorInventoryLevel[];
   wsConnected: boolean;
   setWsConnected: (connected: boolean) => void;
+  setCrowdMetrics: (metrics: CrowdMetrics[]) => void;
   updateCrowdMetrics: (metrics: CrowdMetrics[]) => void;
+  setIncidents: (incidents: EmergencyIncident[]) => void;
   addIncident: (incident: EmergencyIncident) => void;
   updateIncidentStatus: (id: string, status: string) => void;
   addRecommendation: (rec: AIRecommendation) => void;
+  setInventories: (invs: VendorInventoryLevel[]) => void;
   updateInventories: (invs: VendorInventoryLevel[]) => void;
 }
 
@@ -54,11 +35,30 @@ export const useOpsStore = create<OpsState>((set) => ({
   inventories: [],
   wsConnected: false,
   setWsConnected: (connected) => set({ wsConnected: connected }),
-  updateCrowdMetrics: (metrics) => set({ crowdMetrics: metrics }),
-  addIncident: (incident) => set((state) => ({ incidents: [incident, ...state.incidents] })),
-  updateIncidentStatus: (id, status) => set((state) => ({
-    incidents: state.incidents.map((inc) => inc.id === id ? { ...inc, status } : inc)
-  })),
-  addRecommendation: (rec) => set((state) => ({ recommendations: [rec, ...state.recommendations] })),
-  updateInventories: (invs) => set({ inventories: invs })
+  setCrowdMetrics: (metrics) => set({ crowdMetrics: metrics }),
+  updateCrowdMetrics: (metrics) =>
+    set((state) => {
+      const merged = [...state.crowdMetrics];
+      metrics.forEach((m) => {
+        const idx = merged.findIndex((z) => z.zone_id === m.zone_id);
+        if (idx >= 0) merged[idx] = m;
+        else merged.push(m);
+      });
+      return { crowdMetrics: merged };
+    }),
+  setIncidents: (incidents) => set({ incidents }),
+  addIncident: (incident) =>
+    set((state) => ({
+      incidents: state.incidents.some((i) => i.id === incident.id)
+        ? state.incidents
+        : [incident, ...state.incidents],
+    })),
+  updateIncidentStatus: (id, status) =>
+    set((state) => ({
+      incidents: state.incidents.map((inc) => (inc.id === id ? { ...inc, status } : inc)),
+    })),
+  addRecommendation: (rec) =>
+    set((state) => ({ recommendations: [rec, ...state.recommendations] })),
+  setInventories: (invs) => set({ inventories: invs }),
+  updateInventories: (invs) => set({ inventories: invs }),
 }));

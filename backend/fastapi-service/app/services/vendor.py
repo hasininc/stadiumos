@@ -143,30 +143,44 @@ class VendorService:
         return self.repo.get_low_stock_records()
 
     def get_vendor_analytics(self, vendor_id: str) -> VendorAnalyticsResponse:
-        # Check Cache first
         cache_key = f"vendor:analytics:{vendor_id}"
         cached = redis_client.get_cache(cache_key)
         if cached:
             return VendorAnalyticsResponse(**cached)
 
-        # Mocking transactional sales aggregates
+        vendor = self.repo.get_vendor(vendor_id)
+        if not vendor:
+            raise ValidationError("Vendor not found.")
+
+        inventories = self.repo.get_vendor_inventories(vendor_id)
+        products = []
+        total_units = 0
+        total_revenue = 0.0
+        total_cost = 0.0
+
+        for inv in inventories:
+            product = self.repo.get_product(inv.product_id)
+            if product:
+                products.append(product.name)
+                sold_estimate = max(0, inv.max_capacity - inv.current_stock)
+                total_units += sold_estimate
+                total_revenue += sold_estimate * product.price
+                total_cost += sold_estimate * product.cost
+
+        popular = products[:3] if products else []
         res = VendorAnalyticsResponse(
             vendor_id=vendor_id,
-            sales_volume_units=842,
-            revenue_usd=5052.0,
-            cost_usd=1684.0,
-            net_profit_usd=3368.0,
-            popular_products=["Bottled Water", "Hot Dogs"]
+            sales_volume_units=total_units,
+            revenue_usd=round(total_revenue, 2),
+            cost_usd=round(total_cost, 2),
+            net_profit_usd=round(total_revenue - total_cost, 2),
+            popular_products=popular,
         )
 
-        # Cache analytics logs
         redis_client.set_cache(cache_key, res.dict(), ttl=600)
-
-        # Publish performance Kafka metrics update
         kafka_client.publish_event(
             "stadiumos.vendor.performance-updated",
             key=vendor_id,
             payload=res.dict()
         )
-
         return res

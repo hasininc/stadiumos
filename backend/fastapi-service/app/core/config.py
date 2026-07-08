@@ -25,8 +25,18 @@ class Settings(BaseSettings):
     REDIS_HOST: str = os.getenv("STADIUMOS_REDIS_HOST", "localhost")
     REDIS_PORT: int = int(os.getenv("STADIUMOS_REDIS_PORT", "6379"))
 
+    # Kafka Configurations
+    STADIUMOS_KAFKA_BROKERS: str = os.getenv("STADIUMOS_KAFKA_BROKERS", "localhost:9092")
+
     # CORS Configurations
-    BACKEND_CORS_ORIGINS: list[str] = ["http://localhost:3000", "https://*.fifa2026.org"]
+    BACKEND_CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001",
+        "http://127.0.0.1:5173",
+    ]
 
     class Config:
         case_sensitive = True

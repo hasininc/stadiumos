@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Table, Integer, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 from app.db.session import Base
 
 # Association Table for User <-> Language (Many-to-Many)
@@ -29,7 +29,7 @@ class UserProfile(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
-    user = relationship("User", backref="profile")
+    user = relationship("User", backref=backref("profile", uselist=False))
 
 class AccessibilityPreference(Base):
     __tablename__ = "accessibility_preferences"
@@ -41,7 +41,7 @@ class AccessibilityPreference(Base):
     special_requirements = Column(String(512), nullable=True)
 
     # Relationships
-    user = relationship("User", backref="accessibility")
+    user = relationship("User", backref=backref("accessibility", uselist=False))
 
 class EmergencyContact(Base):
     __tablename__ = "emergency_contacts"
@@ -49,7 +49,7 @@ class EmergencyContact(Base):
     id = Column(String(255), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(255), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     contact_name = Column(String(255), nullable=False)
-    relationship = Column(String(100), nullable=False)
+    relationship_type = Column(String(100), nullable=False)
     phone_number = Column(String(50), nullable=False)
 
     # Relationships

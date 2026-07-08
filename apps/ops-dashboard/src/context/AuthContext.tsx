@@ -16,6 +16,7 @@ interface AuthContextType {
   user: UserProfile | null;
   loading: boolean;
   login: (email: string, pass: string) => Promise<void>;
+  register: (email: string, pass: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -54,6 +55,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate('/');
   };
 
+  const register = async (email: string, pass: string) => {
+    await api.post('/api/v1/auth/register', {
+      email,
+      password: pass,
+      account_type: 'operator',
+    });
+    await login(email, pass);
+  };
+
   const logout = () => {
     localStorage.removeItem('stadiumos_access_token');
     localStorage.removeItem('stadiumos_refresh_token');
@@ -62,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -23,8 +23,8 @@ def login(login_in: LoginRequest, response: Response, db: Session = Depends(get_
         value=tokens.refresh_token,
         httponly=True,
         max_age=7 * 24 * 3600,
-        secure=True,
-        samesite="strict"
+        secure=False,
+        samesite="lax"
     )
     return tokens
 
@@ -39,8 +39,8 @@ def refresh(refresh_token: str, response: Response, db: Session = Depends(get_db
         value=tokens.refresh_token,
         httponly=True,
         max_age=7 * 24 * 3600,
-        secure=True,
-        samesite="strict"
+        secure=False,
+        samesite="lax"
     )
     return tokens
 

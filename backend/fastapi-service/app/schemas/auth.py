@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import List, Optional
+from typing import List, Optional, Literal
 from datetime import datetime
 
 # DTO schema for Roles
@@ -14,6 +14,7 @@ class RoleBase(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters long")
+    account_type: Literal["fan", "operator"] = "fan"
 
 # Output schema for user profiles
 class UserResponse(BaseModel):

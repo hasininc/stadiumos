@@ -1,86 +1,97 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { parseApiError } from '../utils/apiError';
 
 export const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError('Passwords do not match.');
       return;
     }
 
     setLoading(true);
     setError(null);
     try {
-      await api.post('/api/v1/auth/register', { email, password });
-      setSuccess(true);
-      setTimeout(() => navigate('/login'), 2000);
-    } catch (err: any) {
-      setError(err.response?.data?.detail || "Registration failed. Try again.");
-    } finally {
+      await register(email, password);
+    } catch (err: unknown) {
+      setError(parseApiError(err, 'Registration failed. Please try again.'));
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#0C0E12] text-white px-6">
-      <form onSubmit={handleSubmit} className="w-full max-w-md bg-[#161920] border border-gray-800 p-8 rounded-2xl space-y-6">
+    <div className="flex items-center justify-center min-h-screen bg-[#090B0F] text-white px-6 font-sans relative overflow-hidden">
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#00E676]/5 rounded-full filter blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#2979FF]/5 rounded-full filter blur-[120px] pointer-events-none" />
+
+      <form onSubmit={handleSubmit} className="w-full max-w-md bg-[#11141A]/60 backdrop-blur-xl border border-[#1E232F] p-10 rounded-3xl space-y-6 shadow-2xl shadow-black/80 relative z-10">
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-[#00E676] font-display">StadiumOS</h2>
-          <p className="text-sm text-gray-400 mt-2">Onboard new operator coordinates</p>
+          <div className="flex justify-center items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00E676]" />
+            <h2 className="text-2xl font-extrabold text-white tracking-widest font-display">STADIUMOS</h2>
+          </div>
+          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Operations Console</p>
+          <div className="h-px bg-gradient-to-r from-transparent via-[#1E232F] to-transparent my-4" />
+          <p className="text-xs text-gray-400">Create an operations console account</p>
         </div>
 
         {error && (
-          <div className="p-3 bg-red-950/30 border border-red-900/50 text-red-400 text-xs rounded-lg">
+          <div className="p-3 bg-red-950/20 border border-red-900/50 text-red-400 text-xs rounded-xl font-semibold">
             {error}
           </div>
         )}
 
-        {success && (
-          <div className="p-3 bg-green-950/30 border border-green-900/50 text-green-400 text-xs rounded-lg">
-            Account created successfully! Redirecting to sign in...
-          </div>
-        )}
-
         <div className="space-y-4">
-          <div className="flex flex-col space-y-1">
-            <label className="text-xs text-gray-400 font-semibold uppercase">Email Address</label>
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-[#1E232F] border border-gray-800 focus:border-[#00E676] px-4 py-3 rounded-xl text-sm outline-none transition-colors"
+              className="bg-[#161920]/60 border border-[#1E232F] focus:border-[#00E676] px-4 py-3.5 rounded-xl text-xs outline-none transition-all duration-300 placeholder-gray-600"
+              placeholder="operator@stadiumos.dev"
               required
             />
           </div>
 
-          <div className="flex flex-col space-y-1">
-            <label className="text-xs text-gray-400 font-semibold uppercase">Password</label>
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="bg-[#1E232F] border border-gray-800 focus:border-[#00E676] px-4 py-3 rounded-xl text-sm outline-none transition-colors"
+              className="bg-[#161920]/60 border border-[#1E232F] focus:border-[#00E676] px-4 py-3.5 rounded-xl text-xs outline-none transition-all duration-300 placeholder-gray-600"
+              placeholder="Minimum 8 characters"
+              minLength={8}
               required
             />
           </div>
 
-          <div className="flex flex-col space-y-1">
-            <label className="text-xs text-gray-400 font-semibold uppercase">Confirm Password</label>
+          <div className="flex flex-col space-y-1.5">
+            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Confirm Password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-[#1E232F] border border-gray-800 focus:border-[#00E676] px-4 py-3 rounded-xl text-sm outline-none transition-colors"
+              className="bg-[#161920]/60 border border-[#1E232F] focus:border-[#00E676] px-4 py-3.5 rounded-xl text-xs outline-none transition-all duration-300 placeholder-gray-600"
+              placeholder="Re-enter password"
+              minLength={8}
               required
             />
           </div>
@@ -88,14 +99,17 @@ export const Register: React.FC = () => {
 
         <button
           type="submit"
-          disabled={loading || success}
-          className="w-full bg-[#00E676] hover:bg-[#00c865] text-black font-bold py-3 rounded-xl transition-colors text-sm"
+          disabled={loading}
+          className="w-full bg-[#00E676] hover:bg-[#00c865] active:scale-[0.98] disabled:opacity-60 text-black font-bold py-3.5 rounded-xl transition-all duration-300 text-xs uppercase tracking-widest"
         >
-          {loading ? "Creating credentials..." : "Register"}
+          {loading ? 'Creating account...' : 'Create Account'}
         </button>
 
-        <div className="text-center text-xs text-gray-500">
-          Already registered? <span onClick={() => navigate('/login')} className="text-[#2979FF] cursor-pointer hover:underline">Sign In</span>
+        <div className="text-center text-[11px] text-gray-500 font-medium">
+          Already registered?{' '}
+          <button type="button" onClick={() => navigate('/login')} className="text-[#2979FF] hover:underline">
+            Sign in
+          </button>
         </div>
       </form>
     </div>

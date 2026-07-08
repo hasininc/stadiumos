@@ -19,10 +19,11 @@ class AuthService:
         if existing_user:
             raise ValidationError("User with this email already exists.")
         
-        # Enforce default role "Fan" if not specified
-        default_role = self.repo.get_role_by_name("Fan")
+        # Assign role based on account type
+        role_name = "Operations Manager" if user_in.account_type == "operator" else "Fan"
+        default_role = self.repo.get_role_by_name(role_name)
         if not default_role:
-            default_role = Role(name="Fan", description="General Fan Spectator Access")
+            default_role = Role(name=role_name, description=f"{role_name} access")
             self.repo.create_role(default_role)
 
         hashed_password = get_password_hash(user_in.password)

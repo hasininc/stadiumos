@@ -18,6 +18,7 @@ from app.services.vendor import VendorService
 from app.core.websocket import ws_manager
 from typing import List, Optional
 import logging
+from datetime import datetime
 
 logger = logging.getLogger("fastapi")
 
@@ -94,12 +95,28 @@ def get_vendor_analytics(
     return service.get_vendor_analytics(vendor_id)
 
 @router.get("/analytics/products")
-def get_products_analytics(current_user: User = Depends(vendor_or_ops)):
-    # Returns product demand forecast categories summaries
+def get_products_analytics(current_user: User = Depends(vendor_or_ops), db: Session = Depends(get_db)):
+    service = VendorService(db)
+    inventories = service.repo.get_all_inventory()
+    products = []
+    category_counts: dict[str, int] = {}
+    total_revenue = 0.0
+
+    for inv in inventories:
+        product = service.repo.get_product(inv.product_id)
+        if product:
+            products.append(product)
+            category_counts[product.category] = category_counts.get(product.category, 0) + 1
+            sold = max(0, inv.max_capacity - inv.current_stock)
+            total_revenue += sold * product.price
+
+    most_purchased = max(category_counts, key=category_counts.get) if category_counts else "N/A"
+    hourly_avg = round(total_revenue / max(len(inventories), 1), 2)
+
     return {
-        "most_purchased_category": "Beverage",
-        "hourly_sales_average_usd": 1240.50,
-        "predicted_demand_spike_time": "19:45:00Z"
+        "most_purchased_category": most_purchased,
+        "hourly_sales_average_usd": hourly_avg,
+        "predicted_demand_spike_time": datetime.utcnow().strftime("%H:%M:%SZ"),
     }
 
 @router.get("/{id}", response_model=VendorResponse)

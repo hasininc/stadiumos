@@ -2,7 +2,7 @@ import re
 import html
 import logging
 from fastapi import Request, HTTPException, status
-from fastapi.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 from app.core.redis_client import redis_client
 from app.core.config import settings

@@ -39,6 +39,9 @@ class VendorRepository:
     def get_all_inventory(self) -> List[VendorInventory]:
         return self.db.query(VendorInventory).all()
 
+    def get_vendor_inventories(self, vendor_id: str) -> List[VendorInventory]:
+        return self.db.query(VendorInventory).filter(VendorInventory.vendor_id == vendor_id).all()
+
     def create_inventory(self, inventory: VendorInventory) -> VendorInventory:
         self.db.add(inventory)
         self.db.commit()

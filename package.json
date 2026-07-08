@@ -5,6 +5,9 @@
   "private": true,
   "scripts": {
     "start": "nx serve",
+    "dev": "npm run dev:backend & npm run dev:dashboard",
+    "dev:backend": "cd backend/fastapi-service && PYTHONPATH=$(pwd)/../.. .venv/bin/python -m uvicorn app.main:app --reload --port 8000",
+    "dev:dashboard": "cd apps/ops-dashboard && npm run dev",
     "build": "nx build",
     "test": "nx test",
     "lint": "nx lint",

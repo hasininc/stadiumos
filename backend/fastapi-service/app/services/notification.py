@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from app.repositories.notification import NotificationRepository
 from app.repositories.user import UserRepository
-from app.models.notification import Notification
+from app.models.notification import Notification, NotificationPreference
 from app.schemas.notification import NotificationCreate, NotificationBroadcast, NotificationPreferenceUpdate
 from app.core.redis_client import redis_client
 from app.core.kafka_client import kafka_client
@@ -12,7 +12,7 @@ from app.core.fcm_client import fcm_client
 from app.core.twilio_client import twilio_client
 from app.core.sendgrid_client import sendgrid_client
 from shared.utils.error_handlers import ValidationError, AuthorizationError
-from typing import List, Optional
+from typing import List, Optional, Any
 
 logger = logging.getLogger("fastapi")
 

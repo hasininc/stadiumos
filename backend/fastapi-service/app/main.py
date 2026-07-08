@@ -5,11 +5,13 @@ from app.core.config import settings
 from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors
 from app.core.security_layer import SecureHeadersMiddleware
 from app.db.session import engine, Base
+from app.db.seed import seed_database
 from shared.utils.error_handlers import ApplicationError
 import logging
 
 # Ensure database tables exist (Development fallbacks)
 Base.metadata.create_all(bind=engine)
+seed_database()
 
 logger = logging.getLogger("fastapi")
 
