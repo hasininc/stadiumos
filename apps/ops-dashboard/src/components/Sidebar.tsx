@@ -24,6 +24,8 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     { to: '/', label: 'Dashboard Hub', icon: LayoutDashboard, roles: ['Security Staff', 'Medical Staff', 'Operations Manager'] },
+    { to: '/simulation', label: 'Incident Simulator', icon: Cpu, roles: ['Operations Manager'] },
+    { to: '/prediction', label: 'Crowd Predictions', icon: TrendingUp, roles: ['Operations Manager'] },
     { to: '/crowd', label: 'Crowd Intelligence', icon: Users, roles: ['Security Staff', 'Operations Manager'] },
     { to: '/ai-command', label: 'AI Command Center', icon: Cpu, roles: ['Operations Manager'] },
     { to: '/emergencies', label: 'Emergency Response', icon: ShieldAlert, roles: ['Security Staff', 'Medical Staff', 'Operations Manager'] },
@@ -34,14 +36,14 @@ export const Sidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-[280px] min-w-[280px] bg-[#0B1228]/95 border-r border-white/5 min-h-screen text-[#F8FAFC] flex flex-col shadow-2xl relative z-20">
+    <aside className="w-[280px] min-w-[280px] bg-[#180F25]/95 border-r border-white/5 min-h-screen text-[#F8FAFC] flex flex-col shadow-2xl relative z-20">
       {/* Brand Header */}
-      <div className="p-6 border-b border-white/5 flex flex-col space-y-1.5 bg-[#050B1C]">
+      <div className="h-20 px-6 border-b border-white/5 flex flex-col justify-center bg-[#120A1D]">
         <div className="flex items-center space-x-3">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#00A8FF] pulse-indicator" />
+          <div className="w-2.5 h-2.5 rounded-full bg-[#DE638A] pulse-indicator" />
           <h2 className="text-xl font-bold tracking-widest font-display text-white">STADIUMOS</h2>
         </div>
-        <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest">Operations Console</span>
+        <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-widest mt-0.5">Operations Console</span>
       </div>
 
       {/* Navigation */}
@@ -52,8 +54,8 @@ export const Sidebar: React.FC = () => {
             className={({ isActive }) =>
               `flex items-center px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#00A8FF]/10 to-transparent text-[#00A8FF] border-l-2 border-[#00A8FF]'
-                  : 'text-[#94A3B8] hover:bg-[#111A33]/50 hover:text-white'
+                  ? 'bg-gradient-to-r from-[#DE638A]/10 to-transparent text-[#DE638A] border-l-2 border-[#DE638A]'
+                  : 'text-[#94A3B8] hover:bg-[#231634]/50 hover:text-white'
               }`
             }
           >
@@ -70,8 +72,8 @@ export const Sidebar: React.FC = () => {
                 className={({ isActive }) =>
                   `flex items-center px-4 py-3.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-300 ${
                     isActive
-                      ? 'bg-gradient-to-r from-[#00A8FF]/10 to-transparent text-[#00A8FF] border-l-2 border-[#00A8FF] shadow-[inset_4px_0_12px_rgba(0,168,255,0.05)]'
-                      : 'text-[#94A3B8] hover:bg-[#111A33]/50 hover:text-white'
+                      ? 'bg-gradient-to-r from-[#DE638A]/10 to-transparent text-[#DE638A] border-l-2 border-[#DE638A] shadow-[inset_4px_0_12px_rgba(222,99,138,0.05)]'
+                      : 'text-[#94A3B8] hover:bg-[#231634]/50 hover:text-white'
                   }`
                 }
               >
@@ -83,9 +85,9 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Footer Profile Segment */}
-      <div className="p-5 border-t border-white/5 bg-[#050B1C]">
+      <div className="p-5 border-t border-white/5 bg-[#120A1D]">
         <div className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Access Scope:</div>
-        <div className="text-xs font-bold text-[#00E5FF] mt-1 truncate">
+        <div className="text-xs font-bold text-[#F7B9C4] mt-1 truncate">
           {userRoles.length > 0 ? userRoles.join(' • ') : 'No Role Mapping'}
         </div>
       </div>

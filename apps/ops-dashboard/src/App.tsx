@@ -7,6 +7,7 @@ import { AIChatBot } from './components/AIChatBot';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
+import { Simulation } from './pages/Simulation';
 import { CrowdMonitoring } from './pages/CrowdMonitoring';
 import { AICommandCenter } from './pages/AICommandCenter';
 import { EmergencyManagement } from './pages/EmergencyManagement';
@@ -27,13 +28,14 @@ export const App: React.FC = () => {
         <Route
           path="/*"
           element={
-            <div className="flex bg-[#050B1C] h-screen w-screen overflow-hidden text-[#F8FAFC]">
+            <div className="flex bg-[#120A1D] h-screen w-screen overflow-hidden text-[#F8FAFC]">
               <Sidebar />
               <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Topbar />
                 <main className="flex-1 overflow-y-auto">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
+                    <Route path="/simulation" element={<Simulation />} />
                     <Route path="/crowd" element={<CrowdMonitoring />} />
                     <Route path="/ai-command" element={<AICommandCenter />} />
                     <Route path="/emergencies" element={<EmergencyManagement />} />

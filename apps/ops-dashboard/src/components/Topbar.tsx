@@ -34,17 +34,17 @@ export const Topbar: React.FC = () => {
   const userRoles = user?.roles.map((r) => r.name) || [];
 
   return (
-    <header className="h-20 bg-[#0B1228] border-b border-white/5 text-[#F8FAFC] flex items-center justify-between px-8 z-10 shadow-md">
+    <header className="h-20 bg-[#180F25] border-b border-white/5 text-[#F8FAFC] flex items-center justify-between px-8 z-10 shadow-md">
       <div className="flex items-center space-x-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00A8FF]/20 to-[#00E5FF]/20 border border-[#00A8FF]/30 flex items-center justify-center font-bold text-lg shadow-lg">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#DE638A]/20 to-[#F7B9C4]/20 border border-[#DE638A]/30 flex items-center justify-center font-bold text-lg shadow-lg shrink-0">
           🏆
         </div>
-        <div>
+        <div className="flex flex-col justify-center">
           <div className="flex items-center space-x-2">
-            <h3 className="text-sm font-extrabold text-white tracking-wider uppercase font-display">Argentina vs France</h3>
-            <span className="px-2 py-0.5 text-[9px] font-bold bg-red-500/20 text-[#FF5A5A] rounded border border-red-500/30 uppercase tracking-widest animate-pulse">Live Match</span>
+            <h3 className="text-sm font-extrabold text-white tracking-wider uppercase font-display leading-none">Argentina vs France</h3>
+            <span className="px-2 py-0.5 text-[9px] font-bold bg-red-500/20 text-[#FF5A5A] rounded border border-red-500/30 uppercase tracking-widest animate-pulse leading-none">Live Match</span>
           </div>
-          <span className="text-[10px] text-[#94A3B8] font-semibold tracking-wider uppercase">
+          <span className="text-[10px] text-[#94A3B8] font-semibold tracking-wider uppercase mt-1.5 leading-none">
             {stadiumName} · Lusail, Qatar · Round of 16
           </span>
         </div>
@@ -52,7 +52,7 @@ export const Topbar: React.FC = () => {
 
       <div className="hidden lg:flex items-center space-x-6 bg-white/[0.02] border border-white/5 px-6 py-2.5 rounded-full backdrop-blur-md">
         <div className="flex items-center space-x-2 text-[#94A3B8]">
-          <Clock className="w-3.5 h-3.5 text-[#00E5FF]" />
+          <Clock className="w-3.5 h-3.5 text-[#F7B9C4]" />
           <span className="text-xs font-mono font-bold tracking-wider text-white">{currentTime}</span>
         </div>
         <span className="w-px h-3.5 bg-white/10" />
@@ -83,7 +83,7 @@ export const Topbar: React.FC = () => {
         <div className="flex items-center space-x-3.5">
           <div className="text-right">
             <div className="text-xs font-bold text-white">{user?.email || 'operator@stadiumos.dev'}</div>
-            <div className="text-[9px] text-[#00E5FF] font-semibold uppercase tracking-wider font-mono">
+            <div className="text-[9px] text-[#F7B9C4] font-semibold uppercase tracking-wider font-mono">
               {userRoles.length > 0 ? userRoles.join(' • ') : 'Ops Manager'}
             </div>
           </div>

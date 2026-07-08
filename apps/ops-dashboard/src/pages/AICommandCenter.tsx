@@ -452,16 +452,16 @@ export const AICommandCenter: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top Model Bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-[#0B1228]/80 backdrop-blur-md shrink-0">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-white/5 bg-[#180F25]/80 backdrop-blur-md shrink-0">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 rounded-full bg-[#8B5CF6] pulse-indicator" />
+              <div className="w-2 h-2 rounded-full bg-[#C6BADE] pulse-indicator" />
               <span className="text-[11px] font-bold text-white uppercase tracking-wider font-display">AI Operations Copilot</span>
             </div>
             <div className="h-4 w-px bg-white/10" />
-            <div className="flex items-center space-x-1.5 px-2.5 py-1 bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 rounded-lg">
-              <Cpu className="w-3 h-3 text-[#8B5CF6]" />
-              <span className="text-[9px] font-mono font-bold text-[#C084FC] uppercase">GPT-5 Turbo</span>
+            <div className="flex items-center space-x-1.5 px-2.5 py-1 bg-[#C6BADE]/10 border border-[#C6BADE]/20 rounded-lg">
+              <Cpu className="w-3 h-3 text-[#C6BADE]" />
+              <span className="text-[9px] font-mono font-bold text-[#F7B9C4] uppercase">GPT-5 Turbo</span>
             </div>
           </div>
 
@@ -512,9 +512,9 @@ export const AICommandCenter: React.FC = () => {
               >
                 {/* System messages */}
                 {msg.role === 'system' && (
-                  <div className="flex items-center space-x-2 px-4 py-2.5 bg-[#8B5CF6]/8 border border-[#8B5CF6]/15 rounded-xl max-w-[85%]">
-                    <Zap className="w-3.5 h-3.5 text-[#8B5CF6] shrink-0" />
-                    <span className="text-[11px] text-[#C084FC] font-medium">{msg.content}</span>
+                  <div className="flex items-center space-x-2 px-4 py-2.5 bg-[#C6BADE]/8 border border-[#C6BADE]/15 rounded-xl max-w-[85%]">
+                    <Zap className="w-3.5 h-3.5 text-[#C6BADE] shrink-0" />
+                    <span className="text-[11px] text-[#F3D9E5] font-medium">{msg.content}</span>
                     <span className="text-[8px] text-[#94A3B8] font-mono shrink-0 ml-2">{formatTime(msg.timestamp)}</span>
                   </div>
                 )}
@@ -523,12 +523,12 @@ export const AICommandCenter: React.FC = () => {
                 {msg.role === 'user' && (
                   <div className="flex items-start space-x-3 max-w-[70%]">
                     <div className="flex flex-col items-end flex-1 min-w-0">
-                      <div className="bg-gradient-to-br from-[#00A8FF] to-[#0077CC] text-white px-5 py-3.5 rounded-2xl rounded-br-md shadow-lg shadow-[#00A8FF]/10">
+                      <div className="bg-gradient-to-br from-[#DE638A] to-[#B23E63] text-white px-5 py-3.5 rounded-2xl rounded-br-md shadow-lg shadow-[#DE638A]/10">
                         <p className="text-[12px] leading-relaxed">{msg.content}</p>
                       </div>
                       <span className="text-[8px] text-[#94A3B8] font-mono mt-1.5 mr-1">{formatTime(msg.timestamp)}</span>
                     </div>
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#00A8FF] to-[#0077CC] flex items-center justify-center shrink-0 shadow-lg shadow-[#00A8FF]/15">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#DE638A] to-[#B23E63] flex items-center justify-center shrink-0 shadow-lg shadow-[#DE638A]/15">
                       <User className="w-4 h-4 text-white" />
                     </div>
                   </div>
@@ -537,19 +537,19 @@ export const AICommandCenter: React.FC = () => {
                 {/* AI messages */}
                 {msg.role === 'assistant' && (
                   <div className="flex items-start space-x-3 max-w-[85%] min-w-0">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] flex items-center justify-center shrink-0 shadow-lg shadow-[#8B5CF6]/15 mt-1">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#C6BADE] to-[#9F91C7] flex items-center justify-center shrink-0 shadow-lg shadow-[#C6BADE]/15 mt-1">
                       <Bot className="w-4 h-4 text-white" />
                     </div>
                     <div className="flex flex-col flex-1 min-w-0">
                       <div className="glass-panel rounded-2xl rounded-bl-md px-5 py-4 border border-white/[0.06] relative overflow-hidden">
                         {/* Accent top stripe */}
-                        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#8B5CF6] via-[#00E5FF] to-transparent" />
+                        <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#C6BADE] via-[#F7B9C4] to-transparent" />
 
                         {/* Meta badges */}
                         {msg.meta && !msg.isStreaming && (
                           <div className="flex items-center flex-wrap gap-2 mb-3 pb-3 border-b border-white/5">
                             {msg.meta.confidence && (
-                              <span className="text-[8px] font-mono font-bold bg-[#8B5CF6]/10 border border-[#8B5CF6]/20 text-[#C084FC] px-2 py-0.5 rounded-md uppercase tracking-wider">
+                              <span className="text-[8px] font-mono font-bold bg-[#C6BADE]/10 border border-[#C6BADE]/20 text-[#E7E2F2] px-2 py-0.5 rounded-md uppercase tracking-wider">
                                 {msg.meta.confidence}% confidence
                               </span>
                             )}
@@ -612,9 +612,9 @@ export const AICommandCenter: React.FC = () => {
               className="flex items-center space-x-2 ml-11 mt-2"
             >
               <div className="flex space-x-1">
-                <div className="typing-dot w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
-                <div className="typing-dot w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
-                <div className="typing-dot w-1.5 h-1.5 rounded-full bg-[#8B5CF6]" />
+                <div className="typing-dot w-1.5 h-1.5 rounded-full bg-[#C6BADE]" />
+                <div className="typing-dot w-1.5 h-1.5 rounded-full bg-[#C6BADE]" />
+                <div className="typing-dot w-1.5 h-1.5 rounded-full bg-[#C6BADE]" />
               </div>
               <span className="text-[9px] text-[#94A3B8] font-mono">Copilot is analyzing...</span>
             </motion.div>
@@ -636,11 +636,11 @@ export const AICommandCenter: React.FC = () => {
                 <button
                   key={idx}
                   onClick={() => handleSend(prompt.text)}
-                  className="group flex items-center space-x-2.5 px-4 py-3 bg-[#111A33]/60 hover:bg-[#16213E]/80 border border-white/5 hover:border-[#8B5CF6]/20 rounded-xl text-left transition-all duration-300"
+                  className="group flex items-center space-x-2.5 px-4 py-3 bg-[#231634]/60 hover:bg-[#332049]/80 border border-white/5 hover:border-[#C6BADE]/20 rounded-xl text-left transition-all duration-300"
                 >
-                  <prompt.icon className="w-3.5 h-3.5 text-[#94A3B8] group-hover:text-[#8B5CF6] transition-colors shrink-0" />
+                  <prompt.icon className="w-3.5 h-3.5 text-[#94A3B8] group-hover:text-[#C6BADE] transition-colors shrink-0" />
                   <span className="text-[10px] text-[#94A3B8] group-hover:text-white transition-colors leading-snug">{prompt.text}</span>
-                  <ChevronRight className="w-3 h-3 text-[#94A3B8]/0 group-hover:text-[#8B5CF6] transition-all ml-auto shrink-0" />
+                  <ChevronRight className="w-3 h-3 text-[#94A3B8]/0 group-hover:text-[#C6BADE] transition-all ml-auto shrink-0" />
                 </button>
               ))}
             </div>
@@ -659,7 +659,7 @@ export const AICommandCenter: React.FC = () => {
                 placeholder="Ask about stadium operations..."
                 rows={1}
                 disabled={isStreaming}
-                className="w-full bg-[#111A33]/80 border border-white/8 hover:border-white/12 focus:border-[#8B5CF6]/40 focus:ring-1 focus:ring-[#8B5CF6]/20 px-5 py-3.5 pr-12 rounded-2xl text-[12px] outline-none text-white placeholder-[#64748B] resize-none transition-all duration-200 disabled:opacity-50"
+                className="w-full bg-[#231634]/80 border border-white/8 hover:border-white/12 focus:border-[#DE638A]/40 focus:ring-1 focus:ring-[#DE638A]/20 px-5 py-3.5 pr-12 rounded-2xl text-[12px] outline-none text-white placeholder-[#64748B] resize-none transition-all duration-200 disabled:opacity-50"
                 style={{ minHeight: '48px', maxHeight: '120px' }}
               />
               <div className="absolute right-3 bottom-2.5 flex items-center space-x-1">
@@ -669,7 +669,7 @@ export const AICommandCenter: React.FC = () => {
 
             {/* Voice button (UI only) */}
             <button
-              className="p-3 rounded-xl bg-[#111A33]/80 border border-white/8 hover:border-[#00E5FF]/30 text-[#94A3B8] hover:text-[#00E5FF] transition-all duration-200 shrink-0"
+              className="p-3 rounded-xl bg-[#231634]/80 border border-white/8 hover:border-[#F7B9C4]/30 text-[#94A3B8] hover:text-[#F7B9C4] transition-all duration-200 shrink-0"
               title="Voice input (coming soon)"
             >
               <Mic className="w-4 h-4" />
@@ -679,7 +679,7 @@ export const AICommandCenter: React.FC = () => {
             <button
               onClick={() => handleSend()}
               disabled={!input.trim() || isStreaming}
-              className="p-3 rounded-xl bg-gradient-to-br from-[#8B5CF6] to-[#6D28D9] hover:from-[#7C4DFF] hover:to-[#5B21B6] disabled:opacity-30 disabled:cursor-not-allowed text-white shadow-lg shadow-[#8B5CF6]/20 hover:shadow-[#8B5CF6]/30 transition-all duration-200 shrink-0"
+              className="p-3 rounded-xl bg-gradient-to-br from-[#DE638A] to-[#B23E63] hover:from-[#E37A9D] hover:to-[#A13156] disabled:opacity-30 disabled:cursor-not-allowed text-white shadow-lg shadow-[#DE638A]/20 hover:shadow-[#DE638A]/30 transition-all duration-200 shrink-0"
             >
               {isStreaming ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -692,12 +692,12 @@ export const AICommandCenter: React.FC = () => {
       </div>
 
       {/* ───── RIGHT: Context Insights Panel ───── */}
-      <div className="w-[340px] min-w-[340px] border-l border-white/5 bg-[#0B1228]/60 backdrop-blur-md overflow-y-auto hidden xl:flex flex-col">
+      <div className="w-[340px] min-w-[340px] border-l border-white/5 bg-[#180F25]/60 backdrop-blur-md overflow-y-auto hidden xl:flex flex-col">
 
         {/* Panel Header */}
         <div className="px-5 py-3.5 border-b border-white/5 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2">
-            <Eye className="w-3.5 h-3.5 text-[#00E5FF]" />
+            <Eye className="w-3.5 h-3.5 text-[#F7B9C4]" />
             <span className="text-[10px] font-bold text-white uppercase tracking-widest font-display">Live Context</span>
           </div>
           <div className="flex items-center space-x-1">
@@ -721,7 +721,7 @@ export const AICommandCenter: React.FC = () => {
               </div>
               <div className="flex flex-col items-center px-4">
                 <div className="text-lg font-extrabold text-white font-display tracking-wider">1 — 1</div>
-                <div className="text-[9px] text-[#00E5FF] font-mono font-bold mt-0.5">42' First Half</div>
+                <div className="text-[9px] text-[#F7B9C4] font-mono font-bold mt-0.5">42' First Half</div>
               </div>
               <div className="text-center flex-1">
                 <div className="text-[11px] font-bold text-white font-display">FRA</div>
@@ -729,7 +729,7 @@ export const AICommandCenter: React.FC = () => {
               </div>
             </div>
             <div className="mt-2.5 pt-2.5 border-t border-white/5 flex items-center justify-center space-x-2">
-              <Globe className="w-3 h-3 text-[#94A3B8]" />
+              <Globe className="w-3.5 h-3.5 text-[#94A3B8]" />
               <span className="text-[9px] text-[#94A3B8]">Lusail Iconic Stadium — Group C</span>
             </div>
           </div>
@@ -745,7 +745,7 @@ export const AICommandCenter: React.FC = () => {
               <span className="text-[9px] text-[#94A3B8]">/ 80,000</span>
             </div>
             <div className="w-full bg-white/5 rounded-full h-1.5 mt-2.5">
-              <div className="bg-gradient-to-r from-[#00A8FF] to-[#00E5FF] h-1.5 rounded-full transition-all duration-1000" style={{ width: '84%' }} />
+              <div className="bg-gradient-to-r from-[#DE638A] to-[#F7B9C4] h-1.5 rounded-full transition-all duration-1000" style={{ width: '84%' }} />
             </div>
             <div className="flex justify-between mt-1.5">
               <span className="text-[8px] text-[#94A3B8] font-mono">84% capacity</span>
@@ -762,7 +762,7 @@ export const AICommandCenter: React.FC = () => {
             {[
               { zone: 'North Stand', pct: 88, color: '#EF4444' },
               { zone: 'South Stand', pct: 72, color: '#F59E0B' },
-              { zone: 'East Wing', pct: 61, color: '#00A8FF' },
+              { zone: 'East Wing', pct: 61, color: '#DE638A' },
               { zone: 'West Wing', pct: 45, color: '#22C55E' },
               { zone: 'VIP Lounge', pct: 34, color: '#8B5CF6' },
             ].map((z) => (
@@ -833,18 +833,18 @@ export const AICommandCenter: React.FC = () => {
           <div className="glass-panel rounded-xl p-4 border border-white/[0.06]">
             <div className="flex items-center justify-between mb-2">
               <span className="text-[8px] text-[#94A3B8] font-bold uppercase tracking-widest">AI Confidence</span>
-              <Cpu className="w-3 h-3 text-[#8B5CF6]" />
+              <Cpu className="w-3 h-3 text-[#C6BADE]" />
             </div>
             <div className="flex items-baseline space-x-2">
-              <span className="text-xl font-extrabold text-[#8B5CF6] font-display">96.8%</span>
+              <span className="text-xl font-extrabold text-[#C6BADE] font-display">96.8%</span>
               <span className="text-[8px] text-emerald-400 font-mono">+1.2%</span>
             </div>
             <div className="w-full bg-white/5 rounded-full h-1.5 mt-2">
-              <div className="bg-gradient-to-r from-[#8B5CF6] to-[#C084FC] h-1.5 rounded-full transition-all duration-1000" style={{ width: '96.8%' }} />
+              <div className="bg-gradient-to-r from-[#C6BADE] to-[#E7E2F2] h-1.5 rounded-full transition-all duration-1000" style={{ width: '96.8%' }} />
             </div>
             <div className="flex justify-between mt-1.5">
               <span className="text-[8px] text-[#94A3B8] font-mono">Model accuracy score</span>
-              <span className="text-[8px] text-[#C084FC] font-mono font-bold">Excellent</span>
+              <span className="text-[8px] text-[#C6BADE] font-mono font-bold">Excellent</span>
             </div>
           </div>
 

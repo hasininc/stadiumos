@@ -196,14 +196,14 @@ export const Dashboard: React.FC = () => {
   const currentZoneData = displayZones.find(z => z.zone_id === selectedZone) || displayZones[0];
 
   return (
-    <div className="p-8 text-[#F8FAFC] space-y-8 font-sans selection:bg-[#00A8FF]/20 relative">
+    <div className="p-8 text-[#F8FAFC] space-y-8 font-sans selection:bg-[#DE638A]/20 relative">
       {/* Simulation Feedback Alert */}
       {simulationAlert && (
-        <div className="fixed top-6 right-6 z-50 glass-panel-elevated border-[#8B5CF6]/30 px-6 py-4 rounded-xl flex items-center space-x-3 shadow-2xl animate-bounce">
-          <Zap className="w-5 h-5 text-[#8B5CF6] animate-pulse" />
+        <div className="fixed top-6 right-6 z-50 glass-panel-elevated border-[#C6BADE]/30 px-6 py-4 rounded-xl flex items-center space-x-3 shadow-2xl animate-bounce">
+          <Zap className="w-5 h-5 text-[#C6BADE] animate-pulse" />
           <div>
             <div className="text-xs font-bold text-white uppercase tracking-wider">AI Operations Dispatcher</div>
-            <div className="text-xs text-[#00E5FF] font-mono mt-0.5">{simulationAlert}</div>
+            <div className="text-xs text-[#F7B9C4] font-mono mt-0.5">{simulationAlert}</div>
           </div>
         </div>
       )}
@@ -239,9 +239,9 @@ export const Dashboard: React.FC = () => {
           >
             Reconnect Feed
           </Button>
-          <div className="bg-[#111A33] border border-white/5 px-4 py-2 rounded-xl text-right">
+          <div className="bg-[#231634] border border-white/5 px-4 py-2 rounded-xl text-right">
             <div className="text-[9px] text-[#94A3B8] uppercase tracking-wider font-bold">Match Phase</div>
-            <div className="text-xs font-bold text-[#00E5FF]">2nd Half · 74&apos; (ARG 2 - 1 FRA)</div>
+            <div className="text-xs font-bold text-[#F7B9C4]">2nd Half · 74&apos; (ARG 2 - 1 FRA)</div>
           </div>
         </div>
       </div>
@@ -251,27 +251,26 @@ export const Dashboard: React.FC = () => {
         
         {/* Main Content Area (Columns 1-3) */}
         <div className="xl:col-span-3 space-y-8">
-          
-          {/* Section 1: Live Metrics Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+                    {/* Section 1: Live Metrics Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             
             {/* Card 1: Attendance */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5 col-span-1 xl:col-span-2">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Attendance</span>
-                <Users className="w-4 h-4 text-[#00A8FF]" />
+                <Users className="w-4 h-4 text-[#DE638A]" />
               </div>
               <div className="mt-2">
                 <div className="text-xl font-extrabold font-display text-white">{totalHeadcount.toLocaleString()}</div>
                 <div className="text-[10px] text-[#94A3B8] mt-1">89.1% Total Seating</div>
               </div>
               <div className="w-full bg-white/5 rounded-full h-1.5 mt-2">
-                <div className="bg-gradient-to-r from-[#00A8FF] to-[#00E5FF] h-1.5 rounded-full" style={{ width: '89%' }}></div>
+                <div className="bg-gradient-to-r from-[#DE638A] to-[#F7B9C4] h-1.5 rounded-full" style={{ width: '89%' }}></div>
               </div>
             </div>
 
             {/* Card 2: Crowd Density */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Crowd Density</span>
                 <Activity className="w-4 h-4 text-[#EF4444]" />
@@ -286,7 +285,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Card 3: Open Gates */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Open Gates</span>
                 <Unlock className="w-4 h-4 text-[#22C55E]" />
@@ -301,7 +300,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Card 4: Emergency Alerts */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Active Alerts</span>
                 <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
@@ -316,7 +315,7 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Card 5: Medical Cases */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Medical Cases</span>
                 <HeartPulse className="w-4 h-4 text-[#EF4444]" />
@@ -331,35 +330,34 @@ export const Dashboard: React.FC = () => {
             </div>
 
             {/* Card 6: AI Confidence */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">AI Confidence</span>
-                <Cpu className="w-4 h-4 text-[#8B5CF6]" />
+                <Cpu className="w-4 h-4 text-[#C6BADE]" />
               </div>
               <div className="mt-2">
-                <div className="text-xl font-extrabold font-display text-[#8B5CF6]">94.8%</div>
+                <div className="text-xl font-extrabold font-display text-[#C6BADE]">94.8%</div>
                 <div className="text-[10px] text-[#94A3B8] mt-1">Agent Planning Score</div>
               </div>
               <div className="w-full bg-white/5 rounded-full h-1.5 mt-2">
-                <div className="bg-[#8B5CF6] h-1.5 rounded-full" style={{ width: '94.8%' }}></div>
+                <div className="bg-[#C6BADE] h-1.5 rounded-full" style={{ width: '94.8%' }}></div>
               </div>
             </div>
 
             {/* Card 7: Pred. Accuracy */}
-            <div className="glass-panel p-4 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
+            <div className="glass-panel p-5 rounded-2xl flex flex-col justify-between h-36 border border-white/5">
               <div className="flex justify-between items-start">
                 <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider">Pred. Accuracy</span>
-                <TrendingUp className="w-4 h-4 text-[#00E5FF]" />
+                <TrendingUp className="w-4 h-4 text-[#F7B9C4]" />
               </div>
               <div className="mt-2">
-                <div className="text-xl font-extrabold font-display text-[#00E5FF]">97.2%</div>
+                <div className="text-xl font-extrabold font-display text-[#F7B9C4]">97.2%</div>
                 <div className="text-[10px] text-[#94A3B8] mt-1">Wait Time Accuracy</div>
               </div>
               <div className="w-full bg-white/5 rounded-full h-1.5 mt-2">
-                <div className="bg-[#00E5FF] h-1.5 rounded-full" style={{ width: '97.2%' }}></div>
+                <div className="bg-[#F7B9C4] h-1.5 rounded-full" style={{ width: '97.2%' }}></div>
               </div>
             </div>
-
           </div>
 
           {/* Section 2: Crowd Heatmap & Interactive Stand Inspector */}
@@ -382,7 +380,7 @@ export const Dashboard: React.FC = () => {
 
               {/* Heatmap Visual Canvas */}
               <div className="flex-1 flex flex-col justify-center items-center py-6">
-                <div className="relative w-full max-w-[460px] aspect-[4/3] border border-white/5 rounded-full p-6 bg-[#0B1228]/50 flex items-center justify-center">
+                <div className="relative w-full max-w-[460px] aspect-[4/3] border border-white/5 rounded-full p-6 bg-[#180F25]/50 flex items-center justify-center">
                   
                   {/* Outer Rings representing Stand Sections */}
                   <div className="absolute inset-4 border border-white/5 rounded-full"></div>
@@ -429,7 +427,7 @@ export const Dashboard: React.FC = () => {
                           transform: 'translate(-50%, -50%)',
                         }}
                         className={`px-3 py-1.5 rounded-lg border font-mono font-bold text-[9px] tracking-wide shadow-lg cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 ${colorClasses} ${
-                          isSelected ? 'ring-2 ring-[#00E5FF] scale-105 border-white' : ''
+                          isSelected ? 'ring-2 ring-[#F7B9C4] scale-105 border-white' : ''
                         }`}
                       >
                         <div>{zone.zone_name.split(' ')[0]}</div>
@@ -516,20 +514,20 @@ export const Dashboard: React.FC = () => {
                   <AreaChart data={attendanceTrendData} margin={{ left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorSpectators" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00A8FF" stopOpacity={0.25} />
-                        <stop offset="95%" stopColor="#00A8FF" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#DE638A" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#DE638A" stopOpacity={0} />
                       </linearGradient>
                       <linearGradient id="colorVip" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#00E5FF" stopOpacity={0.15} />
-                        <stop offset="95%" stopColor="#00E5FF" stopOpacity={0} />
+                        <stop offset="5%" stopColor="#F7B9C4" stopOpacity={0.15} />
+                        <stop offset="95%" stopColor="#F7B9C4" stopOpacity={0} />
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                     <XAxis dataKey="time" stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
-                    <RechartsTooltip contentStyle={{ backgroundColor: '#111A33', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
-                    <Area type="monotone" name="Spectators" dataKey="spectators" stroke="#00A8FF" strokeWidth={2.5} fillOpacity={1} fill="url(#colorSpectators)" />
-                    <Area type="monotone" name="VIP Club" dataKey="vip" stroke="#00E5FF" strokeWidth={1.5} fillOpacity={1} fill="url(#colorVip)" />
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#231634', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
+                    <Area type="monotone" name="Spectators" dataKey="spectators" stroke="#DE638A" strokeWidth={2.5} fillOpacity={1} fill="url(#colorSpectators)" />
+                    <Area type="monotone" name="VIP Club" dataKey="vip" stroke="#F7B9C4" strokeWidth={1.5} fillOpacity={1} fill="url(#colorVip)" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -547,10 +545,10 @@ export const Dashboard: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                     <XAxis dataKey="name" stroke="#94A3B8" fontSize={8} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
-                    <RechartsTooltip contentStyle={{ backgroundColor: '#111A33', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#231634', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                    <Bar name="Live Wait Time (min)" dataKey="time" fill="#00A8FF" radius={[4, 4, 0, 0]} />
-                    <Bar name="Predicted (min)" dataKey="predicted" fill="#8B5CF6" radius={[4, 4, 0, 0]} fillOpacity={0.6} />
+                    <Bar name="Live Wait Time (min)" dataKey="time" fill="#DE638A" radius={[4, 4, 0, 0]} />
+                    <Bar name="Predicted (min)" dataKey="predicted" fill="#C6BADE" radius={[4, 4, 0, 0]} fillOpacity={0.6} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -568,10 +566,10 @@ export const Dashboard: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                     <XAxis dataKey="time" stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
-                    <RechartsTooltip contentStyle={{ backgroundColor: '#111A33', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#231634', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                    <Line type="monotone" name="In-Stadium Fans" dataKey="actual" stroke="#00A8FF" strokeWidth={3} activeDot={{ r: 6 }} dot={true} />
-                    <Line type="monotone" name="AI Forecast Discharge" dataKey="predicted" stroke="#8B5CF6" strokeWidth={2} strokeDasharray="5 5" dot={true} />
+                    <Line type="monotone" name="In-Stadium Fans" dataKey="actual" stroke="#DE638A" strokeWidth={3} activeDot={{ r: 6 }} dot={true} />
+                    <Line type="monotone" name="AI Forecast Discharge" dataKey="predicted" stroke="#C6BADE" strokeWidth={2} strokeDasharray="5 5" dot={true} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -589,11 +587,11 @@ export const Dashboard: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                     <XAxis dataKey="hour" stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
-                    <RechartsTooltip contentStyle={{ backgroundColor: '#111A33', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#231634', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
                     <Line type="monotone" name="Medical Alerts" dataKey="Medical" stroke="#EF4444" strokeWidth={2} dot={true} />
                     <Line type="monotone" name="Security Alerts" dataKey="Security" stroke="#F59E0B" strokeWidth={2} dot={true} />
-                    <Line type="monotone" name="Facilities Alerts" dataKey="Facilities" stroke="#00E5FF" strokeWidth={1.5} dot={true} />
+                    <Line type="monotone" name="Facilities Alerts" dataKey="Facilities" stroke="#F7B9C4" strokeWidth={1.5} dot={true} />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -611,10 +609,10 @@ export const Dashboard: React.FC = () => {
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
                     <XAxis dataKey="category" stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
                     <YAxis stroke="#94A3B8" fontSize={9} axisLine={false} tickLine={false} />
-                    <RechartsTooltip contentStyle={{ backgroundColor: '#111A33', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
+                    <RechartsTooltip contentStyle={{ backgroundColor: '#231634', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', fontSize: '10px' }} />
                     <Legend iconSize={8} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
-                    <Bar name="Actual Sales ($)" dataKey="sales" fill="#00E5FF" radius={[4, 4, 0, 0]} />
-                    <Line type="monotone" name="Forecast Demand ($)" dataKey="predicted" stroke="#8B5CF6" strokeWidth={2.5} dot={true} />
+                    <Bar name="Actual Sales ($)" dataKey="sales" fill="#F7B9C4" radius={[4, 4, 0, 0]} />
+                    <Line type="monotone" name="Forecast Demand ($)" dataKey="predicted" stroke="#C6BADE" strokeWidth={2.5} dot={true} />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>

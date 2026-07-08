@@ -554,13 +554,13 @@ export const Navigation: React.FC = () => {
     <div className="flex h-full w-full overflow-hidden font-sans text-[#F8FAFC]">
       
       {/* ───── LEFT / CENTER: Map Canvas ───── */}
-      <div className="flex-1 flex flex-col min-w-0 relative bg-[#050B1C]">
+      <div className="flex-1 flex flex-col min-w-0 relative bg-[#120A1D]">
         
         {/* Top Controls Toolbar */}
         <div className="absolute top-6 left-6 right-6 z-10 flex items-center justify-between pointer-events-none">
           
           {/* Zoom / Navigation Controls */}
-          <div className="flex items-center space-x-2 bg-[#0B1228]/90 border border-white/5 p-2 rounded-xl backdrop-blur-md pointer-events-auto shadow-2xl">
+          <div className="flex items-center space-x-2 bg-[#180F25]/90 border border-white/5 p-2 rounded-xl backdrop-blur-md pointer-events-auto shadow-2xl">
             <button
               onClick={() => handleZoom(0.15)}
               className="p-2 rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-colors"
@@ -587,9 +587,9 @@ export const Navigation: React.FC = () => {
           </div>
 
           {/* Layer Visibility Toggles */}
-          <div className="flex items-center space-x-2 bg-[#0B1228]/90 border border-white/5 p-2 rounded-xl backdrop-blur-md pointer-events-auto shadow-2xl">
+          <div className="flex items-center space-x-2 bg-[#180F25]/90 border border-white/5 p-2 rounded-xl backdrop-blur-md pointer-events-auto shadow-2xl">
             <div className="flex items-center space-x-1 px-2 border-r border-white/5 text-[9px] font-bold text-gray-400 uppercase tracking-widest mr-1">
-              <Layers className="w-3.5 h-3.5 text-[#00E5FF] mr-1.5" />
+              <Layers className="w-3.5 h-3.5 text-[#F7B9C4] mr-1.5" />
               <span>Layers</span>
             </div>
             
@@ -597,7 +597,7 @@ export const Navigation: React.FC = () => {
               onClick={() => setShowHeatmap(!showHeatmap)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
                 showHeatmap 
-                  ? 'bg-[#8B5CF6]/15 border border-[#8B5CF6]/45 text-[#C084FC]' 
+                  ? 'bg-[#C6BADE]/15 border border-[#C6BADE]/45 text-[#E7E2F2]' 
                   : 'bg-transparent border border-transparent text-[#94A3B8] hover:bg-white/5'
               }`}
             >
@@ -608,7 +608,7 @@ export const Navigation: React.FC = () => {
               onClick={() => setShowCameras(!showCameras)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
                 showCameras 
-                  ? 'bg-[#00E5FF]/15 border border-[#00E5FF]/45 text-[#00E5FF]' 
+                  ? 'bg-[#F7B9C4]/15 border border-[#F7B9C4]/45 text-[#F7B9C4]' 
                   : 'bg-transparent border border-transparent text-[#94A3B8] hover:bg-white/5'
               }`}
             >
@@ -619,7 +619,7 @@ export const Navigation: React.FC = () => {
               onClick={() => setShowCrowdStats(!showCrowdStats)}
               className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all ${
                 showCrowdStats 
-                  ? 'bg-[#00A8FF]/15 border border-[#00A8FF]/45 text-[#00A8FF]' 
+                  ? 'bg-[#DE638A]/15 border border-[#DE638A]/45 text-[#DE638A]' 
                   : 'bg-transparent border border-transparent text-[#94A3B8] hover:bg-white/5'
               }`}
             >
@@ -702,14 +702,14 @@ export const Navigation: React.FC = () => {
               <circle cx={400} cy={300} r={285} fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeWidth={1} />
 
               {/* 2. Stadium Structure Backplate */}
-              <ellipse cx={400} cy={300} rx={270} ry={220} fill="#090F21" stroke="rgba(255, 255, 255, 0.05)" strokeWidth={3} />
+              <ellipse cx={400} cy={300} rx={270} ry={220} fill="#0D0715" stroke="rgba(255, 255, 255, 0.05)" strokeWidth={3} />
               
               {/* 3. Outer Concourse / Gate Indicators (Clickable) */}
               {/* Gate A (Top) */}
               <path
                 d="M 360 40 L 440 40 L 450 70 L 350 70 Z"
-                fill={selectedZone?.id === 'gate-a' ? 'rgba(0, 168, 255, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
-                stroke={selectedZone?.id === 'gate-a' ? '#00A8FF' : 'rgba(255,255,255,0.1)'}
+                fill={selectedZone?.id === 'gate-a' ? 'rgba(222, 99, 138, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
+                stroke={selectedZone?.id === 'gate-a' ? '#DE638A' : 'rgba(255,255,255,0.1)'}
                 strokeWidth={1.5}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/5"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('gate-a', 400, 30); }}
@@ -717,8 +717,8 @@ export const Navigation: React.FC = () => {
               {/* Gate B (Right) */}
               <path
                 d="M 730 260 L 760 250 L 760 350 L 730 340 Z"
-                fill={selectedZone?.id === 'gate-b' ? 'rgba(0, 168, 255, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
-                stroke={selectedZone?.id === 'gate-b' ? '#00A8FF' : 'rgba(255,255,255,0.1)'}
+                fill={selectedZone?.id === 'gate-b' ? 'rgba(222, 99, 138, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
+                stroke={selectedZone?.id === 'gate-b' ? '#DE638A' : 'rgba(255,255,255,0.1)'}
                 strokeWidth={1.5}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/5"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('gate-b', 770, 300); }}
@@ -726,8 +726,8 @@ export const Navigation: React.FC = () => {
               {/* Gate C (Bottom) */}
               <path
                 d="M 350 530 L 450 530 L 440 560 L 360 560 Z"
-                fill={selectedZone?.id === 'gate-c' ? 'rgba(0, 168, 255, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
-                stroke={selectedZone?.id === 'gate-c' ? '#00A8FF' : 'rgba(255,255,255,0.1)'}
+                fill={selectedZone?.id === 'gate-c' ? 'rgba(222, 99, 138, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
+                stroke={selectedZone?.id === 'gate-c' ? '#DE638A' : 'rgba(255,255,255,0.1)'}
                 strokeWidth={1.5}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/5"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('gate-c', 400, 570); }}
@@ -735,8 +735,8 @@ export const Navigation: React.FC = () => {
               {/* Gate D (Left) */}
               <path
                 d="M 40 250 L 70 260 L 70 340 L 40 350 Z"
-                fill={selectedZone?.id === 'gate-d' ? 'rgba(0, 168, 255, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
-                stroke={selectedZone?.id === 'gate-d' ? '#00A8FF' : 'rgba(255,255,255,0.1)'}
+                fill={selectedZone?.id === 'gate-d' ? 'rgba(222, 99, 138, 0.25)' : 'rgba(255, 255, 255, 0.03)'}
+                stroke={selectedZone?.id === 'gate-d' ? '#DE638A' : 'rgba(255,255,255,0.1)'}
                 strokeWidth={1.5}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/5"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('gate-d', 30, 300); }}
@@ -746,8 +746,8 @@ export const Navigation: React.FC = () => {
               {/* North Stand */}
               <path
                 d="M 230 160 Q 400 130 570 160 L 610 90 Q 400 50 190 90 Z"
-                fill={selectedZone?.id === 'zone-north-stand' ? 'rgba(139, 92, 246, 0.25)' : 'rgba(17, 26, 51, 0.65)'}
-                stroke={selectedZone?.id === 'zone-north-stand' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.08)'}
+                fill={selectedZone?.id === 'zone-north-stand' ? 'rgba(198, 186, 222, 0.25)' : 'rgba(35, 22, 52, 0.65)'}
+                stroke={selectedZone?.id === 'zone-north-stand' ? '#C6BADE' : 'rgba(255, 255, 255, 0.08)'}
                 strokeWidth={2}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/[0.05]"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('zone-north-stand', 400, 110); }}
@@ -755,8 +755,8 @@ export const Navigation: React.FC = () => {
               {/* South Stand */}
               <path
                 d="M 230 440 Q 400 470 570 440 L 610 510 Q 400 550 190 510 Z"
-                fill={selectedZone?.id === 'zone-south-stand' ? 'rgba(139, 92, 246, 0.25)' : 'rgba(17, 26, 51, 0.65)'}
-                stroke={selectedZone?.id === 'zone-south-stand' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.08)'}
+                fill={selectedZone?.id === 'zone-south-stand' ? 'rgba(198, 186, 222, 0.25)' : 'rgba(35, 22, 52, 0.65)'}
+                stroke={selectedZone?.id === 'zone-south-stand' ? '#C6BADE' : 'rgba(255, 255, 255, 0.08)'}
                 strokeWidth={2}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/[0.05]"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('zone-south-stand', 400, 490); }}
@@ -764,8 +764,8 @@ export const Navigation: React.FC = () => {
               {/* East Stand */}
               <path
                 d="M 580 180 Q 640 300 580 420 L 670 450 Q 740 300 670 150 Z"
-                fill={selectedZone?.id === 'zone-east-stand' ? 'rgba(139, 92, 246, 0.25)' : 'rgba(17, 26, 51, 0.65)'}
-                stroke={selectedZone?.id === 'zone-east-stand' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.08)'}
+                fill={selectedZone?.id === 'zone-east-stand' ? 'rgba(198, 186, 222, 0.25)' : 'rgba(35, 22, 52, 0.65)'}
+                stroke={selectedZone?.id === 'zone-east-stand' ? '#C6BADE' : 'rgba(255, 255, 255, 0.08)'}
                 strokeWidth={2}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/[0.05]"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('zone-east-stand', 690, 300); }}
@@ -773,8 +773,8 @@ export const Navigation: React.FC = () => {
               {/* West Stand */}
               <path
                 d="M 220 180 Q 160 300 220 420 L 130 450 Q 60 300 130 150 Z"
-                fill={selectedZone?.id === 'zone-west-stand' ? 'rgba(139, 92, 246, 0.25)' : 'rgba(17, 26, 51, 0.65)'}
-                stroke={selectedZone?.id === 'zone-west-stand' ? '#8B5CF6' : 'rgba(255, 255, 255, 0.08)'}
+                fill={selectedZone?.id === 'zone-west-stand' ? 'rgba(198, 186, 222, 0.25)' : 'rgba(35, 22, 52, 0.65)'}
+                stroke={selectedZone?.id === 'zone-west-stand' ? '#C6BADE' : 'rgba(255, 255, 255, 0.08)'}
                 strokeWidth={2}
                 className="pointer-events-auto cursor-pointer transition-all hover:fill-white/[0.05]"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('zone-west-stand', 110, 300); }}
@@ -790,8 +790,8 @@ export const Navigation: React.FC = () => {
                 width={260}
                 height={200}
                 rx={12}
-                fill="#0F1F38"
-                stroke={selectedZone?.id === 'zone-pitch' ? '#00E5FF' : 'rgba(0, 229, 255, 0.2)'}
+                fill="#1A1028"
+                stroke={selectedZone?.id === 'zone-pitch' ? '#F7B9C4' : 'rgba(247, 185, 196, 0.2)'}
                 strokeWidth={selectedZone?.id === 'zone-pitch' ? 2 : 1}
                 className="pointer-events-auto cursor-pointer transition-all hover:opacity-90"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('zone-pitch', 400, 300); }}
@@ -809,13 +809,13 @@ export const Navigation: React.FC = () => {
                 width={50}
                 height={35}
                 rx={4}
-                fill={selectedZone?.id === 'service-control-room' ? 'rgba(0, 168, 255, 0.2)' : 'rgba(255,255,255,0.02)'}
-                stroke="rgba(0, 168, 255, 0.3)"
+                fill={selectedZone?.id === 'service-control-room' ? 'rgba(222, 99, 138, 0.2)' : 'rgba(255,255,255,0.02)'}
+                stroke="rgba(222, 99, 138, 0.3)"
                 strokeWidth={1}
                 className="pointer-events-auto cursor-pointer hover:fill-white/5"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('service-control-room', 170, 200); }}
               />
-              <text x={145} y={200} fill="#00A8FF" fontSize={6} fontWeight="bold">CTRL</text>
+              <text x={145} y={200} fill="#DE638A" fontSize={6} fontWeight="bold">CTRL</text>
 
               {/* Security Room */}
               <rect
@@ -824,13 +824,13 @@ export const Navigation: React.FC = () => {
                 width={50}
                 height={35}
                 rx={4}
-                fill={selectedZone?.id === 'service-security-hq' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(255,255,255,0.02)'}
-                stroke="rgba(139, 92, 246, 0.3)"
+                fill={selectedZone?.id === 'service-security-hq' ? 'rgba(198, 186, 222, 0.2)' : 'rgba(255,255,255,0.02)'}
+                stroke="rgba(198, 186, 222, 0.3)"
                 strokeWidth={1}
                 className="pointer-events-auto cursor-pointer hover:fill-white/5"
                 onClick={(e) => { e.stopPropagation(); selectAndFocusLocation('service-security-hq', 170, 400); }}
               />
-              <text x={145} y={400} fill="#8B5CF6" fontSize={6} fontWeight="bold">SEC HQ</text>
+              <text x={145} y={400} fill="#C6BADE" fontSize={6} fontWeight="bold">SEC HQ</text>
 
               {/* Medical HQ */}
               <rect
@@ -888,8 +888,8 @@ export const Navigation: React.FC = () => {
                   {/* Cam nodes */}
                   {[[110, 140], [690, 140], [110, 460], [690, 460], [400, 80], [400, 520]].map(([cx, cy], idx) => (
                     <g key={idx} className="opacity-80">
-                      <circle cx={cx} cy={cy} r={6} fill="#09142E" stroke="#00E5FF" strokeWidth={1} />
-                      <circle cx={cx} cy={cy} r={2} fill="#00E5FF" />
+                      <circle cx={cx} cy={cy} r={6} fill="#0D0715" stroke="#F7B9C4" strokeWidth={1} />
+                      <circle cx={cx} cy={cy} r={2} fill="#F7B9C4" />
                     </g>
                   ))}
                 </g>
@@ -998,9 +998,9 @@ export const Navigation: React.FC = () => {
         </div>
 
         {/* ───── BOTTOM PANELS: Timeline Event Ticker ───── */}
-        <div className="border-t border-white/5 bg-[#0B1228]/85 backdrop-blur-md p-4 relative z-10 shrink-0">
+        <div className="border-t border-white/5 bg-[#180F25]/85 backdrop-blur-md p-4 relative z-10 shrink-0">
           <div className="flex items-center space-x-3 mb-2.5">
-            <Clock className="w-3.5 h-3.5 text-[#00E5FF]" />
+            <Clock className="w-3.5 h-3.5 text-[#F7B9C4]" />
             <span className="text-[10px] font-bold text-white uppercase tracking-widest font-display">Live Incident Timeline</span>
           </div>
           
@@ -1009,7 +1009,7 @@ export const Navigation: React.FC = () => {
               <button
                 key={evt.id}
                 onClick={() => selectAndFocusLocation(evt.zoneId, evt.x, evt.y)}
-                className="flex items-start space-x-3 px-4 py-3 bg-[#111A33]/85 hover:bg-[#16213E]/80 border border-white/5 hover:border-[#00E5FF]/20 rounded-xl text-left min-w-[260px] max-w-[260px] shrink-0 transition-all duration-200"
+                className="flex items-start space-x-3 px-4 py-3 bg-[#231634]/85 hover:bg-[#332049]/80 border border-white/5 hover:border-[#F7B9C4]/20 rounded-xl text-left min-w-[260px] max-w-[260px] shrink-0 transition-all duration-200"
               >
                 {evt.severity === 'critical' ? (
                   <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -1042,10 +1042,10 @@ export const Navigation: React.FC = () => {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -350, opacity: 0 }}
               transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="absolute left-6 top-24 bottom-28 w-[320px] bg-[#0B1228]/95 border border-white/8 rounded-2xl shadow-2xl backdrop-blur-lg z-20 flex flex-col overflow-hidden"
+              className="absolute left-6 top-24 bottom-28 w-[320px] bg-[#180F25]/95 border border-white/8 rounded-2xl shadow-2xl backdrop-blur-lg z-20 flex flex-col overflow-hidden"
             >
               {/* Drawer Header */}
-              <div className="p-4 border-b border-white/5 bg-[#050B1C] flex justify-between items-start">
+              <div className="p-4 border-b border-white/5 bg-[#120A1D] flex justify-between items-start">
                 <div className="min-w-0">
                   <div className="flex items-center space-x-2">
                     <span className={`inline-flex px-1.5 py-0.5 text-[8px] font-bold uppercase rounded border ${getRiskTextColor(selectedZone.risk)}`}>
@@ -1067,7 +1067,7 @@ export const Navigation: React.FC = () => {
               <div className="p-4 space-y-4 flex-1 overflow-y-auto">
                 
                 {/* Large Occupancy Plate */}
-                <div className="grid grid-cols-2 gap-2 bg-[#111A33] border border-white/5 rounded-xl p-3.5">
+                <div className="grid grid-cols-2 gap-2 bg-[#231634] border border-white/5 rounded-xl p-3.5">
                   <div>
                     <div className="text-[8px] text-[#94A3B8] font-bold uppercase tracking-wider">Current Capacity</div>
                     <div className="text-lg font-black text-white mt-1 font-mono">
@@ -1092,7 +1092,7 @@ export const Navigation: React.FC = () => {
                     </div>
                     <div className="flex justify-between text-[9px]">
                       <span className="text-[#94A3B8]">Average Scan Rate</span>
-                      <span className="font-mono text-[#00E5FF]">48 scans/min</span>
+                      <span className="font-mono text-[#F7B9C4]">48 scans/min</span>
                     </div>
                     <div className="flex justify-between text-[9px]">
                       <span className="text-[#94A3B8]">Est. Wait Time</span>
@@ -1204,12 +1204,12 @@ export const Navigation: React.FC = () => {
       </div>
 
       {/* ───── RIGHT SIDEBAR: Live AI & Resource Insights ───── */}
-      <div className="w-[340px] min-w-[340px] border-l border-white/5 bg-[#0B1228]/85 backdrop-blur-md overflow-y-auto hidden lg:flex flex-col shrink-0">
+      <div className="w-[340px] min-w-[340px] border-l border-white/5 bg-[#180F25]/85 backdrop-blur-md overflow-y-auto hidden lg:flex flex-col shrink-0">
         
         {/* Header */}
         <div className="px-5 py-4 border-b border-white/5 flex items-center justify-between shrink-0">
           <div className="flex items-center space-x-2">
-            <Compass className="w-4 h-4 text-[#8B5CF6]" />
+            <Compass className="w-4 h-4 text-[#C6BADE]" />
             <span className="text-[10px] font-bold text-white uppercase tracking-widest font-display">Command Insights</span>
           </div>
           <span className="text-[8px] font-mono text-[#94A3B8] uppercase">StadiumOS Twin</span>
@@ -1231,7 +1231,7 @@ export const Navigation: React.FC = () => {
             
             <div className="w-full bg-white/5 rounded-full h-2 mt-3 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-[#8B5CF6] via-[#00A8FF] to-[#00E5FF] h-2 rounded-full transition-all duration-1000"
+                className="bg-gradient-to-r from-[#C6BADE] via-[#DE638A] to-[#F7B9C4] h-2 rounded-full transition-all duration-1000"
                 style={{ width: `${(totalOccupancy / totalMax) * 100}%` }}
               />
             </div>
@@ -1246,21 +1246,21 @@ export const Navigation: React.FC = () => {
 
           {/* AI Decision Copilot Recommendations */}
           <div className="glass-panel rounded-xl p-4 border border-white/[0.06] relative overflow-hidden">
-            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#8B5CF6] to-[#00E5FF]" />
+            <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-[#C6BADE] to-[#F7B9C4]" />
             <div className="flex items-center space-x-1.5 mb-3">
-              <Zap className="w-3.5 h-3.5 text-[#8B5CF6]" />
-              <span className="text-[8px] text-[#C084FC] font-bold uppercase tracking-widest">AI Dispatch Engine</span>
+              <Zap className="w-3.5 h-3.5 text-[#C6BADE]" />
+              <span className="text-[8px] text-[#C6BADE] font-bold uppercase tracking-widest">AI Dispatch Engine</span>
             </div>
 
             <div className="space-y-3">
-              <div className="p-2.5 bg-[#050B1C]/65 border border-[#8B5CF6]/15 rounded-lg space-y-1">
-                <span className="text-[8px] font-bold font-mono text-[#00E5FF] uppercase block">Gate C Redirect Protocol</span>
+              <div className="p-2.5 bg-[#120A1D]/65 border border-[#C6BADE]/15 rounded-lg space-y-1">
+                <span className="text-[8px] font-bold font-mono text-[#F7B9C4] uppercase block">Gate C Redirect Protocol</span>
                 <p className="text-[9.5px] text-gray-300 leading-relaxed">
                   Gate C turnstiles are at **95%** threshold. Automatically updating digital wayfinding screens to route sector S-West ticket holders to Gate D.
                 </p>
               </div>
 
-              <div className="p-2.5 bg-[#050B1C]/65 border border-white/5 rounded-lg space-y-1">
+              <div className="p-2.5 bg-[#120A1D]/65 border border-white/5 rounded-lg space-y-1">
                 <span className="text-[8px] font-bold font-mono text-[#F59E0B] uppercase block">Halftime Concourse Influx</span>
                 <p className="text-[9.5px] text-gray-300 leading-relaxed">
                   Forecast predicts Concourse North food court density reaching **92%** peak within 6 minutes. Advise activating auxiliary mobile registers.
@@ -1280,7 +1280,7 @@ export const Navigation: React.FC = () => {
 
             <div className="space-y-2">
               {events.map((evt) => (
-                <div key={evt.id} className="p-3 bg-[#050B1C]/50 border border-white/5 rounded-xl space-y-2">
+                <div key={evt.id} className="p-3 bg-[#120A1D]/50 border border-white/5 rounded-xl space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-[9px] font-bold text-white uppercase font-display">{evt.title}</span>
                     <span className={`text-[7px] font-mono font-bold px-1.5 py-0.25 rounded uppercase ${
@@ -1292,7 +1292,7 @@ export const Navigation: React.FC = () => {
                   <p className="text-[9.5px] text-gray-300 leading-relaxed">{evt.description}</p>
                   
                   <div className="flex justify-between items-center pt-1 text-[8.5px]">
-                    <span className="text-[#00E5FF] font-semibold">{evt.timestamp} • Active</span>
+                    <span className="text-[#F7B9C4] font-semibold">{evt.timestamp} • Active</span>
                     <button
                       onClick={() => {
                         // resolve incident
@@ -1338,7 +1338,7 @@ export const Navigation: React.FC = () => {
             
             <div className="mt-4 pt-3.5 border-t border-white/5 flex items-center justify-between text-[9px]">
               <span className="text-[#94A3B8]">Standby Reserves</span>
-              <span className="text-[#00E5FF] font-bold font-mono">32 volunteers ready</span>
+              <span className="text-[#F7B9C4] font-bold font-mono">32 volunteers ready</span>
             </div>
           </div>
 
