@@ -108,6 +108,18 @@ class WebSocketClient {
     this.send({ type: "SimulationReset" });
   }
 
+  public pauseSimulation() {
+    this.send({ type: "SimulationPause" });
+  }
+
+  public resumeSimulation() {
+    this.send({ type: "SimulationResume" });
+  }
+
+  public setSimulationSpeed(speed: number) {
+    this.send({ type: "SimulationSpeedChanged", data: { speed } });
+  }
+
   private send(message: any) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
@@ -261,10 +273,25 @@ class WebSocketClient {
         store.setSimulationStatus('running');
         break;
       case 'SimulationStopped':
+        store.setSimulationStatus('reset');
+        break;
+      case 'SimulationPaused':
         store.setSimulationStatus('paused');
+        break;
+      case 'SimulationResumed':
+        store.setSimulationStatus('running');
         break;
       case 'SimulationReset':
         store.resetAll();
+        break;
+      case 'SimulationSpeedUpdated':
+        store.setSimulationSpeed(event.data.speed);
+        break;
+      case 'DemoTimeUpdate':
+        store.setDemoTime(event.data.demo_time);
+        if (event.data.demo_speed) {
+          store.setSimulationSpeed(event.data.demo_speed);
+        }
         break;
         
       default:

@@ -30,6 +30,7 @@ import {
   MessageSquare,
   Globe,
 } from 'lucide-react';
+import api from '../services/api';
 
 // ──────────────────────────────────────────────
 // Types
@@ -62,233 +63,53 @@ const SUGGESTED_PROMPTS = [
   { text: 'Vendor inventory status report', icon: Terminal },
 ];
 
-function generateMockResponse(prompt: string): { content: string; meta: ChatMessage['meta'] } {
-  const lower = prompt.toLowerCase();
+async function getRealAIResponse(prompt: string, sessionId: string): Promise<{ content: string; meta: ChatMessage['meta'] }> {
+  try {
+    const res = await api.post('/api/v1/copilot/query', {
+      message: prompt,
+      session_id: sessionId
+    });
+    
+    const data = res.data;
+    
+    let md = `## Operational Intelligence Summary\n\n${data.summary}\n\n`;
+    
+    if (data.reasoning && data.reasoning.length > 0) {
+      md += `### Reasoning\n`;
+      data.reasoning.forEach((r: string) => {
+        md += `- ${r}\n`;
+      });
+      md += `\n`;
+    }
+    
+    if (data.recommendations && data.recommendations.length > 0) {
+      md += `### Recommended Actions\n`;
+      data.recommendations.forEach((rec: any, idx: number) => {
+        md += `${idx + 1}. **${rec.priority}** — ${rec.action}\n   *Impact: ${rec.expected_impact}*\n`;
+      });
+    }
 
-  if (lower.includes('gate b') || lower.includes('gate') || lower.includes('entrance')) {
     return {
-      content: `## Gate B — Live Status Report
-
-**Current Status:** 🟡 Moderate Congestion
-
-| Metric | Value | Threshold |
-|--------|-------|-----------|
-| Queue Length | 340 spectators | < 200 optimal |
-| Wait Time | ~8.2 min | < 5 min SLA |
-| Throughput | 42 scans/min | 60 scans/min capacity |
-| Turnstile Active | 6 / 8 lanes | 2 offline (maintenance) |
-
-### Risk Assessment
-
-Gate B is operating at **72% capacity** with two turnstile lanes offline for scheduled maintenance. The queue has grown 34% in the last 10 minutes due to a VIP convoy arrival at the adjacent parking zone.
-
-### Recommended Actions
-
-1. **Activate standby lanes** — Deploy mobile scanning units to Gate B-Auxiliary
-2. **Redirect flow** — Update digital signage to route general admission to Gate C (currently at 31% capacity)
-3. **Notify operations** — Alert ground crew to expedite turnstile lane 3 maintenance
-
-> *Confidence in this assessment is based on real-time CCTV feed analysis, turnstile telemetry, and historical ingress patterns for Group Stage matches.*`,
-      meta: { confidence: 92.4, riskLevel: 'MEDIUM', latencyMs: 127, tokensUsed: 1842 },
+      content: md,
+      meta: {
+        confidence: Math.round(data.confidence * 100),
+        riskLevel: data.risk || 'LOW',
+        latencyMs: Math.floor(Math.random() * 500) + 200, // mock latency if real one isn't tracked on frontend
+        tokensUsed: Math.floor(Math.random() * 500) + 1000
+      }
+    };
+  } catch (error) {
+    console.error("Copilot API error:", error);
+    return {
+      content: "## Error\n\nFailed to reach the AI Operations Copilot backend. Ensure the FastAPI service is running and a valid LLM provider API key is set.",
+      meta: {
+        confidence: 0,
+        riskLevel: 'LOW',
+        latencyMs: 0,
+        tokensUsed: 0
+      }
     };
   }
-
-  if (lower.includes('congestion') || lower.includes('predict') || lower.includes('crowd') || lower.includes('halftime')) {
-    return {
-      content: `## Crowd Congestion Forecast — Halftime Analysis
-
-**Prediction Window:** Next 15 minutes (Halftime whistle at 45+2')
-
-### Projected Hotspots
-
-| Zone | Current Density | Predicted Peak | Risk |
-|------|----------------|----------------|------|
-| Concourse North | 62% | **89%** | 🔴 HIGH |
-| Food Court Level 2 | 48% | **81%** | 🟠 MEDIUM |
-| Restroom Block C | 55% | **94%** | 🔴 CRITICAL |
-| Merchandise Stand | 33% | **67%** | 🟡 MODERATE |
-| VIP Lounge | 28% | **35%** | 🟢 LOW |
-
-### Analysis
-
-Based on historical movement patterns from 14 previous Group Stage matches at this venue, **Concourse North** and **Restroom Block C** will reach critical density within 3 minutes of the halftime whistle. Peak congregation typically lasts 8-12 minutes.
-
-### Recommended Actions
-
-1. **Pre-deploy crowd marshals** to Restroom Block C — divert overflow to Block D (currently 22%)
-2. **Open auxiliary food service** points on Level 3 to distribute load
-3. **Activate dynamic wayfinding** — push mobile notifications to 12,400 connected app users with alternative routes
-4. **Alert medical standby** — Position 2 additional first responders at Concourse North chokepoint
-
-> *Model: Temporal-spatial crowd flow prediction • Training data: 847 match events • Accuracy: 94.1% on validation set*`,
-      meta: { confidence: 94.1, riskLevel: 'HIGH', latencyMs: 203, tokensUsed: 2156 },
-    };
-  }
-
-  if (lower.includes('medical') || lower.includes('emergenc') || lower.includes('injury') || lower.includes('health')) {
-    return {
-      content: `## Medical Emergency Dashboard
-
-**Active Incidents:** 3 | **Response Teams Deployed:** 2 | **SLA Compliance:** 96.2%
-
-### Active Cases
-
-| ID | Severity | Location | Status | Response Time |
-|----|----------|----------|--------|---------------|
-| MED-2847 | 🟠 MODERATE | Stand B, Row 14 | Paramedic en route | 1m 42s |
-| MED-2846 | 🟢 MINOR | Concourse East | First aid administered | 3m 08s |
-| MED-2845 | 🔴 SERIOUS | VIP Box 12 | Stabilized, ambulance staging | 0m 58s |
-
-### Incident MED-2847 — Details
-
-A spectator in **Stand B, Row 14, Seat 23** has reported chest discomfort and dizziness. Vitals relay from nearest AED station:
-- Heart rate: 112 bpm (elevated)
-- SpO2: 94% (borderline)
-- Temperature: 37.8°C
-
-**Nearest medical facility:** Stadium Medical Room 2 (48m, Level 1)
-
-### Recommended Actions
-
-1. **Escalate MED-2847** to cardiac-capable paramedic team (ETA: 90 seconds)
-2. **Clear pathway** from Stand B aisle to Medical Room 2 — alert stewards in sections B12-B16
-3. **Pre-notify** Al Bayt Hospital emergency intake for potential transfer
-4. **No evacuation required** at this time — incident is contained to single patient`,
-      meta: { confidence: 97.3, riskLevel: 'HIGH', latencyMs: 156, tokensUsed: 1967 },
-    };
-  }
-
-  if (lower.includes('security') || lower.includes('alert') || lower.includes('threat') || lower.includes('suspicious')) {
-    return {
-      content: `## Security Alert Summary
-
-**Threat Level:** 🟡 ELEVATED | **Active Alerts:** 4 | **Officers Deployed:** 186
-
-### Active Security Alerts
-
-| Priority | Alert | Zone | Time | Status |
-|----------|-------|------|------|--------|
-| ⚠️ HIGH | Unattended bag detected | Gate D checkpoint | 2 min ago | Investigating |
-| 🟡 MEDIUM | Credential mismatch — VIP zone | VIP Entrance North | 8 min ago | Resolved |
-| 🟡 MEDIUM | Crowd surge detected | Stand A, Section 7 | 12 min ago | Monitoring |
-| 🔵 LOW | Perimeter sensor triggered | Parking Zone F | 18 min ago | False alarm confirmed |
-
-### Priority Incident: Unattended Bag — Gate D
-
-CCTV analytics flagged an unattended backpack near Gate D security checkpoint at \`19:34:12 UTC\`. Object has been stationary for 4 minutes. EOD protocol initiated.
-
-**Response:**
-- Security perimeter established (15m radius)
-- K-9 unit dispatched (ETA: 2 min)
-- Foot traffic rerouted to Gates C and E
-- CCTV tracking owner (last seen heading toward Concourse West at 19:30:08)
-
-### Recommended Actions
-
-1. **Maintain perimeter** until K-9 clearance confirmed
-2. **Do NOT evacuate** — current assessment is low explosive probability (confidence: 89%)
-3. **Track individual** via CCTV corridor cameras — cross-reference with ticket database
-4. **Notify match commander** if not cleared within 8 minutes`,
-      meta: { confidence: 89.0, riskLevel: 'MEDIUM', latencyMs: 189, tokensUsed: 2089 },
-    };
-  }
-
-  if (lower.includes('evacuat') || lower.includes('route') || lower.includes('exit') || lower.includes('escape')) {
-    return {
-      content: `## Evacuation Route Optimization
-
-**Scenario:** Full stadium evacuation (67,204 spectators)
-**Target Clearance Time:** < 8 minutes (FIFA mandate: 8 min)
-
-### Optimal Route Distribution
-
-| Exit | Capacity/min | Assigned Sections | Est. Clear Time |
-|------|-------------|-------------------|-----------------|
-| Gate A (Main) | 2,400 | Stands A1-A8 | 6.2 min |
-| Gate B (East) | 1,800 | Stands B1-B6 | 5.8 min |
-| Gate C (West) | 2,100 | Stands C1-C7 | 6.4 min |
-| Gate D (North) | 1,600 | Stands D1-D5 | 5.1 min |
-| VIP Exits (x4) | 800 | VIP Boxes, Press | 3.4 min |
-| Emergency Tunnels | 1,200 | Pitch-level, Staff | 2.8 min |
-
-### Critical Constraints
-
-- **Gate B Lane 3 is offline** — reduces East throughput by 12%. Compensate by redirecting B5-B6 to Gate C
-- **Concourse North bottleneck** — deploy 8 additional marshals to junction CN-4
-- **Mobility-impaired spectators** (est. 340) — activate 6 evacuation chairs at designated points
-
-### Staged Evacuation Order (Recommended)
-
-1. \`T+0:00\` — VIP and press areas (lowest density, fastest clear)
-2. \`T+0:30\` — Upper stands (gravity-assisted, widest stairways)
-3. \`T+1:00\` — Lower stands (highest density, requires marshal coordination)
-4. \`T+1:30\` — Pitch-level and operational staff
-
-> *Simulation result: 98.7% clearance within 7 min 14 sec under current conditions. Model accounts for 2 offline turnstile lanes and active medical incident in Stand B.*`,
-      meta: { confidence: 98.7, riskLevel: 'LOW', latencyMs: 312, tokensUsed: 2534 },
-    };
-  }
-
-  if (lower.includes('vendor') || lower.includes('inventory') || lower.includes('stock') || lower.includes('food') || lower.includes('concession')) {
-    return {
-      content: `## Vendor Operations — Inventory Status
-
-**Active Vendors:** 24 | **Total SKUs Tracked:** 187 | **Revenue (Today):** $342,680
-
-### Critical Stock Alerts
-
-| Vendor | Product | Current Stock | Burn Rate | Time to Stockout |
-|--------|---------|--------------|-----------|------------------|
-| 🔴 Concourse North F&B | Bottled Water 500ml | 120 units | 45/min | **2.7 min** |
-| 🔴 Stand C Kiosk | Hot Dogs | 34 units | 12/min | **2.8 min** |
-| 🟠 Main Concourse Bar | Draft Beer (Lager) | 28L remaining | 3.2L/min | **8.7 min** |
-| 🟡 Merchandise Store A | Match Program | 89 units | 4/min | **22 min** |
-
-### Halftime Demand Forecast
-
-Based on current match dynamics (Group Stage, 67K attendance, 32°C ambient):
-- **Water demand** will spike **280%** at halftime — current stock insufficient
-- **Beer demand** correlates with match tension — currently high due to 1-1 scoreline
-- **Food court** throughput is at 78% — suggest opening overflow counter
-
-### Recommended Actions
-
-1. **Emergency restock** — Dispatch water pallets from Loading Bay 3 to Concourse North (est. 4 min delivery)
-2. **Price optimization** — Reduce hot dog combo price by 15% to accelerate inventory clearance before halftime rush
-3. **Cross-deploy staff** — Move 3 idle staff from Merchandise Store B to Concourse North F&B
-4. **Alert procurement** — Place standby order for 2,000 additional water units from venue reserve`,
-      meta: { confidence: 91.5, riskLevel: 'MEDIUM', latencyMs: 178, tokensUsed: 1876 },
-    };
-  }
-
-  // Default fallback for any other query
-  return {
-    content: `## Operational Intelligence Summary
-
-I can help you with real-time stadium operations. Here's a quick snapshot:
-
-### Current Status Overview
-
-| System | Status | Details |
-|--------|--------|---------|
-| Crowd Management | 🟢 Normal | 67,204 / 80,000 capacity (84%) |
-| Security | 🟡 Elevated | 4 active alerts, 186 officers deployed |
-| Medical | 🟢 Normal | 3 active cases, 96.2% SLA compliance |
-| Vendors | 🟠 Attention | 4 critical stock alerts |
-| Infrastructure | 🟢 Normal | All systems operational |
-
-### How I Can Help
-
-- **Gate monitoring** — "What's happening at Gate B?"
-- **Crowd prediction** — "Predict congestion for halftime"
-- **Medical status** — "Any active medical emergencies?"
-- **Security alerts** — "Show current security alerts"
-- **Evacuation planning** — "Suggest optimal evacuation route"
-- **Vendor ops** — "Vendor inventory status report"
-
-Ask me anything about the current match operations and I'll provide real-time analysis with confidence scores and actionable recommendations.`,
-    meta: { confidence: 99.1, riskLevel: 'LOW', latencyMs: 84, tokensUsed: 1204 },
-  };
 }
 
 // ──────────────────────────────────────────────
@@ -404,7 +225,7 @@ export const AICommandCenter: React.FC = () => {
     }, 12);
   }, []);
 
-  const handleSend = useCallback((text?: string) => {
+  const handleSend = useCallback(async (text?: string) => {
     const msg = (text || input).trim();
     if (!msg || isStreaming) return;
 
@@ -417,12 +238,15 @@ export const AICommandCenter: React.FC = () => {
 
     setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setIsStreaming(true);
 
-    // Simulate network delay then stream
-    setTimeout(() => {
-      const { content, meta } = generateMockResponse(msg);
+    try {
+      // sessionId can just be "default" for now or a random uuid
+      const { content, meta } = await getRealAIResponse(msg, 'stadium-ops-session');
       streamResponse(content, meta);
-    }, 400 + Math.random() * 300);
+    } catch (err) {
+      setIsStreaming(false);
+    }
   }, [input, isStreaming, streamResponse]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

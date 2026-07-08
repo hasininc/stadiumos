@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 import json
 import time
 from app.core.config import settings
-from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors, prediction
+from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors, prediction, copilot
 from app.core.security_layer import SecureHeadersMiddleware
 from app.db.session import engine, Base
 from app.db.seed import seed_database
@@ -61,7 +61,7 @@ app.include_router(emergencies.router, prefix=f"{settings.API_V1_STR}/emergencie
 app.include_router(navigation.router, prefix=f"{settings.API_V1_STR}/navigation", tags=["navigation"])
 app.include_router(vendors.router, prefix=f"{settings.API_V1_STR}/vendors", tags=["vendors"])
 app.include_router(prediction.router, prefix=f"{settings.API_V1_STR}/predict", tags=["prediction"])
-
+app.include_router(copilot.router, prefix=f"{settings.API_V1_STR}/copilot", tags=["copilot"])
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
@@ -84,7 +84,18 @@ async def websocket_live_endpoint(websocket: WebSocket):
                     await live_ws_manager.stop_simulation()
                     await live_ws_manager.broadcast({"type": "SimulationStopped", "data": {}})
                 elif msg_type == "SimulationReset":
+                    await live_ws_manager.stop_simulation()
                     await live_ws_manager.broadcast({"type": "SimulationReset", "data": {}})
+                elif msg_type == "SimulationPause":
+                    live_ws_manager.demo_paused = True
+                    await live_ws_manager.broadcast({"type": "SimulationPaused", "data": {}})
+                elif msg_type == "SimulationResume":
+                    await live_ws_manager.start_simulation()
+                    await live_ws_manager.broadcast({"type": "SimulationResumed", "data": {}})
+                elif msg_type == "SimulationSpeedChanged":
+                    new_speed = msg.get("data", {}).get("speed", 1.0)
+                    live_ws_manager.demo_speed = float(new_speed)
+                    await live_ws_manager.broadcast({"type": "SimulationSpeedUpdated", "data": {"speed": live_ws_manager.demo_speed}})
             except Exception:
                 await websocket.send_json({"pong": True, "received": data})
     except WebSocketDisconnect:

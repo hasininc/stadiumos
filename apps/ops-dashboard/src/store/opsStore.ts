@@ -37,6 +37,7 @@ export interface OpsState {
   simulationStatus: 'running' | 'paused' | 'reset';
   simulationSpeed: 1 | 2 | 5;
   demoModeActive: boolean;
+  demoTime: number;
   
   // What-If Sliders
   attendance: number;
@@ -67,6 +68,7 @@ export interface OpsState {
   setSimulationStatus: (status: OpsState['simulationStatus']) => void;
   setSimulationSpeed: (speed: OpsState['simulationSpeed']) => void;
   setDemoMode: (active: boolean) => void;
+  setDemoTime: (time: number) => void;
   
   updateWhatIf: (newState: Partial<Pick<OpsState, 'attendance' | 'gateCapacity' | 'securityStaff' | 'closeGateC' | 'heavyRain' | 'vipArrival'>>) => void;
   triggerEvent: (eventKey: string) => void;
@@ -110,9 +112,10 @@ export const useOpsStore = create<OpsState>((set) => ({
   timelineEvents: DEFAULT_TIMELINE,
   notifications: [],
   
-  simulationStatus: 'running',
+  simulationStatus: 'paused',
   simulationSpeed: 1,
   demoModeActive: false,
+  demoTime: 0,
   
   attendance: 78550,
   gateCapacity: 100,
@@ -162,6 +165,7 @@ export const useOpsStore = create<OpsState>((set) => ({
   setSimulationStatus: (status) => set({ simulationStatus: status }),
   setSimulationSpeed: (speed) => set({ simulationSpeed: speed }),
   setDemoMode: (active) => set({ demoModeActive: active }),
+  setDemoTime: (time) => set({ demoTime: time }),
   
   updateWhatIf: (newState) =>
     set((state) => {
@@ -354,8 +358,9 @@ export const useOpsStore = create<OpsState>((set) => ({
       closeGateC: false,
       heavyRain: false,
       vipArrival: false,
-      simulationStatus: 'running',
+      simulationStatus: 'paused',
       simulationSpeed: 1,
       demoModeActive: false,
+      demoTime: 0,
     }),
 }));

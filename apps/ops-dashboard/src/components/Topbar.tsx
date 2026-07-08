@@ -37,6 +37,7 @@ export const Topbar: React.FC = () => {
   const userRoles = user?.roles.map((r) => r.name) || [];
 
   const simulationStatus = useOpsStore((state) => state.simulationStatus);
+  const demoModeActive = useOpsStore((state) => state.demoModeActive);
 
   return (
     <header className="h-20 bg-[#180F25] border-b border-white/5 text-[#F8FAFC] flex items-center justify-between px-8 z-10 shadow-md">
@@ -112,34 +113,36 @@ export const Topbar: React.FC = () => {
         )}
       </div>
 
-      <div className="flex items-center space-x-6">
-        <button className="relative w-9 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 flex items-center justify-center text-white transition-all duration-300">
-          <Bell className="w-4 h-4" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#EF4444] rounded-full text-[9px] font-bold flex items-center justify-center shadow-lg text-white">4</span>
-        </button>
-
-        <div className="flex items-center space-x-2">
-          <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-[#22C55E]' : 'bg-[#EF4444]'}`} />
-          <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider font-mono">
-            {wsConnected ? 'Telemetry Live' : 'Offline'}
-          </span>
-        </div>
-
-        <div className="flex items-center space-x-3.5">
-          <div className="text-right">
-            <div className="text-xs font-bold text-white">{user?.email || 'operator@stadiumos.dev'}</div>
-            <div className="text-[9px] text-[#F7B9C4] font-semibold uppercase tracking-wider font-mono">
-              {userRoles.length > 0 ? userRoles.join(' • ') : 'Ops Manager'}
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="px-3.5 py-2 border border-[#EF4444]/30 hover:bg-[#EF4444]/15 text-[#EF4444] text-[10px] font-bold tracking-wider uppercase rounded-xl transition-all duration-300"
-          >
-            Sign Out
+      {!demoModeActive && (
+        <div className="flex items-center space-x-6">
+          <button className="relative w-9 h-9 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/5 flex items-center justify-center text-white transition-all duration-300">
+            <Bell className="w-4 h-4" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#EF4444] rounded-full text-[9px] font-bold flex items-center justify-center shadow-lg text-white">4</span>
           </button>
+
+          <div className="flex items-center space-x-2">
+            <span className={`w-2 h-2 rounded-full ${wsConnected ? 'bg-[#22C55E]' : 'bg-[#EF4444]'}`} />
+            <span className="text-[9px] text-[#94A3B8] font-bold uppercase tracking-wider font-mono">
+              {wsConnected ? 'Telemetry Live' : 'Offline'}
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-3.5">
+            <div className="text-right">
+              <div className="text-xs font-bold text-white">{user?.email || 'operator@stadiumos.dev'}</div>
+              <div className="text-[9px] text-[#F7B9C4] font-semibold uppercase tracking-wider font-mono">
+                {userRoles.length > 0 ? userRoles.join(' • ') : 'Ops Manager'}
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="px-3.5 py-2 border border-[#EF4444]/30 hover:bg-[#EF4444]/15 text-[#EF4444] text-[10px] font-bold tracking-wider uppercase rounded-xl transition-all duration-300"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 };

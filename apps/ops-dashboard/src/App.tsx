@@ -7,6 +7,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
 import { AIChatBot } from './components/AIChatBot';
+import { DemoControls } from './components/DemoControls';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
@@ -34,31 +35,7 @@ export const App: React.FC = () => {
     return () => wsService.disconnect();
   }, []);
 
-  // Central Event Bus Scheduler for Demo Mode
-  useEffect(() => {
-    if (!demoModeActive || simulationStatus !== 'running') return;
-    
-    const eventKeys = [
-      'CROWD_SURGE', 
-      'MEDICAL_EMERGENCY', 
-      'LOST_CHILD', 
-      'SUSPICIOUS_PACKAGE', 
-      'SECURITY_BREACH', 
-      'WEATHER_ALERT', 
-      'VIP_ARRIVAL'
-    ];
-    
-    const tick = () => {
-      const randomKey = eventKeys[Math.floor(Math.random() * eventKeys.length)];
-      triggerEvent(randomKey);
-    };
-
-    // Auto-generate event every 8-12 seconds scaled by simulation speed
-    const baseInterval = (8000 + Math.random() * 4000) / simulationSpeed;
-    const interval = setInterval(tick, baseInterval);
-    
-    return () => clearInterval(interval);
-  }, [demoModeActive, simulationStatus, simulationSpeed, triggerEvent]);
+  // Removed local Demo Mode Event Scheduler - backend orchestration handles timeline now.
 
   return (
     <Routes>
@@ -111,7 +88,7 @@ export const App: React.FC = () => {
                 </AnimatePresence>
               </div>
 
-              <Sidebar />
+              {!demoModeActive && <Sidebar />}
               <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Topbar />
                 <main className="flex-1 overflow-y-auto">
@@ -132,6 +109,9 @@ export const App: React.FC = () => {
               </div>
               {/* Floating AI Agent Companion */}
               <AIChatBot />
+
+              {/* Central Demo Controls Widget */}
+              <DemoControls />
             </div>
           }
         />
