@@ -33,6 +33,8 @@ export const Topbar: React.FC = () => {
   const activeIncidents = incidents.filter((i) => i.status !== 'Resolved').length;
   const userRoles = user?.roles.map((r) => r.name) || [];
 
+  const simulationStatus = useOpsStore((state) => state.simulationStatus);
+
   return (
     <header className="h-20 bg-[#180F25] border-b border-white/5 text-[#F8FAFC] flex items-center justify-between px-8 z-10 shadow-md">
       <div className="flex items-center space-x-4">
@@ -50,20 +52,35 @@ export const Topbar: React.FC = () => {
         </div>
       </div>
 
-      <div className="hidden lg:flex items-center space-x-6 bg-white/[0.02] border border-white/5 px-6 py-2.5 rounded-full backdrop-blur-md">
-        <div className="flex items-center space-x-2 text-[#94A3B8]">
-          <Clock className="w-3.5 h-3.5 text-[#F7B9C4]" />
-          <span className="text-xs font-mono font-bold tracking-wider text-white">{currentTime}</span>
+      <div className="hidden xl:flex items-center space-x-4 bg-white/[0.02] border border-white/5 px-5 py-2 rounded-full backdrop-blur-md text-[9px] font-bold font-mono">
+        <div className="flex items-center space-x-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+          <span className="text-gray-400">BACKEND:</span>
+          <span className="text-white">CONNECTED</span>
         </div>
-        <span className="w-px h-3.5 bg-white/10" />
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-[#22C55E] pulse-indicator" />
-          <span className="text-[10px] font-bold tracking-widest text-[#22C55E] uppercase font-mono">AI Scanner: ACTIVE</span>
+        <span className="w-px h-3 bg-white/10" />
+        <div className="flex items-center space-x-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+          <span className="text-gray-400">PREDICTIONS:</span>
+          <span className="text-white">CONNECTED</span>
         </div>
-        <span className="w-px h-3.5 bg-white/10" />
-        <div className="text-[10px] font-bold text-[#F59E0B] flex items-center space-x-1.5">
-          <ShieldAlert className="w-3.5 h-3.5" />
-          <span>{activeIncidents} ACTIVE INCIDENTS</span>
+        <span className="w-px h-3 bg-white/10" />
+        <div className="flex items-center space-x-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+          <span className="text-gray-400">COPILOT:</span>
+          <span className="text-white">READY</span>
+        </div>
+        <span className="w-px h-3 bg-white/10" />
+        <div className="flex items-center space-x-1.5">
+          <span className={`w-1.5 h-1.5 rounded-full ${simulationStatus === 'running' ? 'bg-[#22C55E] animate-pulse' : 'bg-amber-500'}`} />
+          <span className="text-gray-400">SIMULATION:</span>
+          <span className="text-white uppercase">{simulationStatus}</span>
+        </div>
+        <span className="w-px h-3 bg-white/10" />
+        <div className="flex items-center space-x-1.5">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
+          <span className="text-gray-400">WS:</span>
+          <span className="text-white">MOCK CONNECTED</span>
         </div>
       </div>
 

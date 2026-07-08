@@ -260,9 +260,9 @@ const SIMULATION_PRESETS: Record<string, SimulationEvent> = {
 
 export const Simulation: React.FC = () => {
   const store = useOpsStore();
-  const [simulationStatus, setSimulationStatus] = useState<'running' | 'paused' | 'reset'>('running');
-  const [simulationSpeed, setSimulationSpeed] = useState<1 | 2 | 5>(1);
-  const [activeEvents, setActiveEvents] = useState<SimulationEvent[]>([]);
+  const simulationStatus = store.simulationStatus;
+  const simulationSpeed = store.simulationSpeed;
+  const timelineEvents = store.timelineEvents;
   const [selectedEvent, setSelectedEvent] = useState<SimulationEvent | null>(null);
   
   // Real-time animation states for map items
@@ -272,19 +272,11 @@ export const Simulation: React.FC = () => {
   const [rainActive, setRainActive] = useState(false);
   const [evacActive, setEvacActive] = useState(false);
 
-  // Set initial store data if empty to ensure sync
+  // Sync visual storm/evac flags with store variables
   useEffect(() => {
-    if (store.crowdMetrics.length === 0) {
-      store.setCrowdMetrics([
-        { zone_id: 'ZONE_GATE_A', zone_name: 'North Gate A', occupancy_pct: 91, headcount: 1820, status: 'Critical' },
-        { zone_id: 'ZONE_GATE_B', zone_name: 'South Gate B', occupancy_pct: 38, headcount: 750, status: 'Normal' },
-        { zone_id: 'ZONE_VIP', zone_name: 'VIP Club Lounges', occupancy_pct: 31, headcount: 310, status: 'Normal' },
-        { zone_id: 'ZONE_FOOD_E', zone_name: 'East Food Concourse', occupancy_pct: 77, headcount: 1540, status: 'Busy' },
-        { zone_id: 'ZONE_PARK_C', zone_name: 'Parking Sector C', occupancy_pct: 71, headcount: 1410, status: 'Busy' },
-        { zone_id: 'ZONE_EXIT_4', zone_name: 'Northwest Exit 4 corridor', occupancy_pct: 11, headcount: 110, status: 'Normal' },
-      ]);
-    }
-  }, []);
+    setRainActive(store.heavyRain);
+    setEvacActive(store.crowdMetrics.every(m => m.status === 'Critical'));
+  }, [store.heavyRain, store.crowdMetrics]);
 
   const triggerSimulation = (key: string) => {
     if (simulationStatus === 'paused') {
@@ -296,104 +288,26 @@ export const Simulation: React.FC = () => {
     const template = SIMULATION_PRESETS[key];
     if (!template) return;
 
-    // Create unique event entry
-    const newEvent: SimulationEvent = {
-      ...template,
-      responseTime: `${(Math.random() * 2 + 0.3).toFixed(1)}s`,
-    };
+    setSelectedEvent(template);
+    setMapPulseZone(template.key);
+    setResponderPos({ x: template.x, y: template.y });
 
-    // Prepend to timeline list
-    setActiveEvents((prev) => [newEvent, ...prev]);
-    setSelectedEvent(newEvent);
+    // Show local confirmation toast
+    setToastMessage(`🚨 [SIMULATION ALERT] ${template.title} triggered!`);
+    setTimeout(() => setToastMessage(null), 3000);
 
-    // Trigger visual highlights
-    setMapPulseZone(newEvent.key);
-    
-    // Animate response team dot to coordinates
-    setResponderPos({ x: newEvent.x, y: newEvent.y });
-
-    // Show floating toast alert
-    setToastMessage(`🚨 [SIMULATION ALERT] ${newEvent.title} triggered!`);
-    setTimeout(() => setToastMessage(null), 4000);
-
-    // Global dashboard mutations: sync to Zustand store
-    const currentMetrics = [...store.crowdMetrics];
-    
-    if (key === 'CROWD_SURGE') {
-      // increase gate headcount and occupancy
-      const gateIdx = currentMetrics.findIndex(m => m.zone_id === 'ZONE_GATE_A');
-      if (gateIdx >= 0) {
-        currentMetrics[gateIdx] = {
-          ...currentMetrics[gateIdx],
-          occupancy_pct: 99,
-          headcount: 2450,
-          status: 'Critical'
-        };
-      }
-      store.setCrowdMetrics(currentMetrics);
-    } else if (key === 'WEATHER_ALERT') {
-      setRainActive(true);
-      // decrease headcount expectation
-      const gateIdx = currentMetrics.findIndex(m => m.zone_id === 'ZONE_GATE_B');
-      if (gateIdx >= 0) {
-        currentMetrics[gateIdx] = {
-          ...currentMetrics[gateIdx],
-          occupancy_pct: 22,
-          headcount: 410,
-          status: 'Normal'
-        };
-      }
-      store.setCrowdMetrics(currentMetrics);
-    } else if (key === 'STADIUM_EVACUATION' || key === 'FIRE_ALARM') {
-      setEvacActive(true);
-      // turn metrics critical
-      const updated = currentMetrics.map(m => ({
-        ...m,
-        occupancy_pct: 99,
-        status: 'Critical'
-      }));
-      store.setCrowdMetrics(updated);
-    }
-
-    // Add to store incidents list to affect dashboard widgets
-    store.addIncident({
-      id: `sim-inc-${Date.now()}`,
-      title: newEvent.title,
-      description: newEvent.description,
-      type: newEvent.category === 'medical' ? 'Medical Emergency' : 'Security Breach',
-      severity: newEvent.severity === 'critical' ? 'Critical' : newEvent.severity === 'high' ? 'High' : 'Medium',
-      status: 'Active',
-      zone_id: 'ZONE_GATE_A',
-      reported_at: new Date().toISOString()
-    });
-
-    // Add recommendation to AI dispatcher
-    store.addRecommendation({
-      agent_name: 'AI Simulator Commander',
-      response_text: `Recommended routing protocols initiated for "${newEvent.title}". Expected impact reduction: ${newEvent.expectedReduction}.`,
-      recommended_actions: newEvent.recommendedActions
-    });
+    // Call store dispatch
+    store.triggerEvent(key);
   };
 
   const handleReset = () => {
-    setActiveEvents([]);
     setSelectedEvent(null);
     setResponderPos({ x: 140, y: 380 });
     setMapPulseZone(null);
     setRainActive(false);
     setEvacActive(false);
     setToastMessage('Simulation engine state has been reset.');
-    
-    // Reset store data to default
-    store.setIncidents([]);
-    store.setCrowdMetrics([
-      { zone_id: 'ZONE_GATE_A', zone_name: 'North Gate A', occupancy_pct: 91, headcount: 1820, status: 'Critical' },
-      { zone_id: 'ZONE_GATE_B', zone_name: 'South Gate B', occupancy_pct: 38, headcount: 750, status: 'Normal' },
-      { zone_id: 'ZONE_VIP', zone_name: 'VIP Club Lounges', occupancy_pct: 31, headcount: 310, status: 'Normal' },
-      { zone_id: 'ZONE_FOOD_E', zone_name: 'East Food Concourse', occupancy_pct: 77, headcount: 1540, status: 'Busy' },
-      { zone_id: 'ZONE_PARK_C', zone_name: 'Parking Sector C', occupancy_pct: 71, headcount: 1410, status: 'Busy' },
-      { zone_id: 'ZONE_EXIT_4', zone_name: 'Northwest Exit 4 corridor', occupancy_pct: 11, headcount: 110, status: 'Normal' },
-    ]);
+    store.resetAll();
     setTimeout(() => setToastMessage(null), 3000);
   };
 
@@ -460,14 +374,14 @@ export const Simulation: React.FC = () => {
           {/* Status buttons */}
           <div className="flex items-center space-x-2 border-r border-white/10 pr-4">
             <button
-              onClick={() => setSimulationStatus('running')}
+              onClick={() => store.setSimulationStatus('running')}
               className={`p-2 rounded-lg transition-all ${simulationStatus === 'running' ? 'bg-[#DE638A] text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
               title="Resume simulation"
             >
               <Play className="w-4 h-4" />
             </button>
             <button
-              onClick={() => setSimulationStatus('paused')}
+              onClick={() => store.setSimulationStatus('paused')}
               className={`p-2 rounded-lg transition-all ${simulationStatus === 'paused' ? 'bg-amber-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
               title="Pause simulation"
             >
@@ -483,12 +397,12 @@ export const Simulation: React.FC = () => {
           </div>
 
           {/* Speed settings */}
-          <div className="flex items-center space-x-1.5">
+          <div className="flex items-center space-x-1.5 border-r border-white/10 pr-4">
             <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mr-1">Time multiplier</span>
             {([1, 2, 5] as const).map((spd) => (
               <button
                 key={spd}
-                onClick={() => setSimulationSpeed(spd)}
+                onClick={() => store.setSimulationSpeed(spd)}
                 className={`px-2 py-1 text-[10px] font-mono font-bold rounded-md border transition-all ${
                   simulationSpeed === spd
                     ? 'border-[#DE638A] text-[#DE638A] bg-[#DE638A]/5'
@@ -499,6 +413,18 @@ export const Simulation: React.FC = () => {
               </button>
             ))}
           </div>
+
+          {/* Demo mode selector */}
+          <button
+            onClick={() => store.setDemoMode(!store.demoModeActive)}
+            className={`px-3 py-1.5 text-[10px] font-mono font-bold rounded-lg border transition-all ${
+              store.demoModeActive
+                ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10'
+                : 'border-white/5 text-gray-400 hover:text-white hover:border-white/20'
+            }`}
+          >
+            {store.demoModeActive ? 'DEMO: ACTIVE' : 'RUN DEMO'}
+          </button>
         </div>
       </div>
 
@@ -722,37 +648,41 @@ export const Simulation: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-white/5 font-mono text-[11px]">
                   <AnimatePresence initial={false}>
-                    {activeEvents.map((evt) => (
-                      <motion.tr
-                        key={evt.title + evt.responseTime}
-                        initial={{ opacity: 0, height: 0, y: -20 }}
-                        animate={{ opacity: 1, height: 'auto', y: 0 }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                        onClick={() => {
-                          setSelectedEvent(evt);
-                          setResponderPos({ x: evt.x, y: evt.y });
-                          setMapPulseZone(evt.key);
-                        }}
-                        className={`hover:bg-white/[0.02] cursor-pointer transition-colors ${selectedEvent?.title === evt.title ? 'bg-[#DE638A]/5' : ''}`}
-                      >
-                        <td className="py-3 flex items-center space-x-2 font-semibold text-white">
-                          <span className="text-gray-500 text-[10px]">●</span>
-                          <span>{evt.title}</span>
-                        </td>
-                        <td className="py-3 text-[#94A3B8]">{evt.location}</td>
-                        <td className="py-3">
-                          <span className={`px-2 py-0.5 border text-[9px] rounded font-bold uppercase ${getSeverityBadge(evt.severity)}`}>
-                            {evt.severity}
-                          </span>
-                        </td>
-                        <td className="py-3 text-[#94A3B8]">{evt.team}</td>
-                        <td className="py-3 text-right text-[#C6BADE] font-bold">{evt.responseTime}</td>
-                      </motion.tr>
-                    ))}
+                    {timelineEvents.map((evt) => {
+                      const matchedPreset = Object.values(SIMULATION_PRESETS).find(p => evt.text.includes(p.title));
+                      if (!matchedPreset) return null;
+                      return (
+                        <motion.tr
+                          key={evt.id}
+                          initial={{ opacity: 0, height: 0, y: -20 }}
+                          animate={{ opacity: 1, height: 'auto', y: 0 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                          onClick={() => {
+                            setSelectedEvent(matchedPreset);
+                            setResponderPos({ x: matchedPreset.x, y: matchedPreset.y });
+                            setMapPulseZone(matchedPreset.key);
+                          }}
+                          className={`hover:bg-white/[0.02] cursor-pointer transition-colors ${selectedEvent?.key === matchedPreset.key ? 'bg-[#DE638A]/5' : ''}`}
+                        >
+                          <td className="py-3 flex items-center space-x-2 font-semibold text-white">
+                            <span className="text-gray-500 text-[10px]">●</span>
+                            <span>{matchedPreset.title}</span>
+                          </td>
+                          <td className="py-3 text-[#94A3B8]">{matchedPreset.location}</td>
+                          <td className="py-3">
+                            <span className={`px-2 py-0.5 border text-[9px] rounded font-bold uppercase ${getSeverityBadge(matchedPreset.severity)}`}>
+                              {matchedPreset.severity}
+                            </span>
+                          </td>
+                          <td className="py-3 text-[#94A3B8]">{matchedPreset.team}</td>
+                          <td className="py-3 text-right text-[#C6BADE] font-bold">{matchedPreset.responseTime}</td>
+                        </motion.tr>
+                      );
+                    })}
                   </AnimatePresence>
                   
-                  {activeEvents.length === 0 && (
+                  {timelineEvents.length === 0 && (
                     <tr>
                       <td colSpan={5} className="py-12 text-center text-[#64748B] text-[10px] uppercase font-bold tracking-wider">
                         No active simulated incidents. Click any control trigger to inject an event.

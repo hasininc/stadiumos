@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useOpsStore } from '../store/opsStore';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus,
@@ -393,6 +394,7 @@ const getRiskTextColor = (risk?: string) => {
 // ──────────────────────────────────────────────
 
 export const Navigation: React.FC = () => {
+  const store = useOpsStore();
   const [zones, setZones] = useState<StadiumZone[]>(INITIAL_ZONES);
   const [events, setEvents] = useState<EventAlert[]>(INITIAL_EVENTS);
   const [selectedZone, setSelectedZone] = useState<StadiumZone | null>(null);
@@ -410,86 +412,52 @@ export const Navigation: React.FC = () => {
   const dragStart = useRef({ x: 0, y: 0 });
 
   // ──────────────────────────────────────────
-  // Simulation Timer
+  // Centralized State Sync Hook
   // ──────────────────────────────────────────
   useEffect(() => {
-    const timer = setInterval(() => {
-      // 1. Simulate minor crowd movement
-      setZones(prevZones =>
-        prevZones.map(z => {
-          const delta = Math.floor((Math.random() - 0.5) * 80);
-          const newOcc = Math.max(0, Math.min(z.maxCapacity, z.occupancy + delta));
-          
-          let queueDelta = 0;
-          if (z.queueLength !== undefined) {
-            queueDelta = Math.floor((Math.random() - 0.55) * 12);
-            z.queueLength = Math.max(0, z.queueLength + queueDelta);
-          }
+    // 1. Sync zones with global metrics
+    setZones((prevZones) =>
+      prevZones.map((z) => {
+        let matchedMetric = store.crowdMetrics[0];
+        if (z.id.includes('north')) matchedMetric = store.crowdMetrics.find(m => m.zone_id === 'ZONE_GATE_A') || matchedMetric;
+        if (z.id.includes('south')) matchedMetric = store.crowdMetrics.find(m => m.zone_id === 'ZONE_GATE_B') || matchedMetric;
+        if (z.id.includes('east')) matchedMetric = store.crowdMetrics.find(m => m.zone_id === 'ZONE_FOOD_E') || matchedMetric;
+        if (z.id.includes('west')) matchedMetric = store.crowdMetrics.find(m => m.zone_id === 'ZONE_VIP') || matchedMetric;
 
-          // Dynamic Risk calculation
-          let risk = z.risk;
-          const pct = (newOcc / z.maxCapacity) * 100;
-          if (pct > 95) risk = 'red';
-          else if (pct > 80) risk = 'orange';
-          else if (pct > 60) risk = 'yellow';
-          else risk = 'green';
+        const occupancyPct = matchedMetric?.occupancy_pct || 50;
+        return {
+          ...z,
+          occupancy: Math.round(z.maxCapacity * (occupancyPct / 100)),
+          risk: occupancyPct > 85 ? 'red' : occupancyPct > 65 ? 'orange' : 'green',
+        };
+      })
+    );
 
-          return {
-            ...z,
-            occupancy: newOcc,
-            risk,
-          };
-        })
-      );
+    // 2. Sync active alarms on layout map with global incidents list
+    const activeAlarms: EventAlert[] = store.incidents.map((inc) => {
+      let x = 400;
+      let y = 300;
+      if (inc.zone_id === 'ZONE_GATE_A') { x = 400; y = 110; }
+      else if (inc.zone_id === 'ZONE_GATE_B') { x = 400; y = 490; }
+      else if (inc.zone_id === 'ZONE_FOOD_E') { x = 690; y = 300; }
+      else if (inc.zone_id === 'ZONE_VIP') { x = 110; y = 300; }
 
-      // 2. Resolve or spawn random events occasionally
-      setEvents(prevEvents => {
-        // Random chance to resolve an event
-        if (prevEvents.length > 1 && Math.random() > 0.8) {
-          const toResolveIndex = Math.floor(Math.random() * prevEvents.length);
-          return prevEvents.filter((_, idx) => idx !== toResolveIndex);
-        }
+      return {
+        id: inc.id,
+        type: inc.type.toLowerCase().includes('medical') ? 'medical' : inc.type.toLowerCase().includes('weather') ? 'weather' : 'crowd',
+        title: inc.title,
+        description: inc.description,
+        timestamp: new Date(inc.reported_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        zoneId: inc.zone_id === 'ZONE_GATE_A' ? 'zone-north-stand' : inc.zone_id === 'ZONE_GATE_B' ? 'zone-south-stand' : 'zone-east-stand',
+        severity: inc.severity.toLowerCase() as any,
+        resolved: inc.status === 'Resolved',
+        x,
+        y
+      };
+    });
 
-        // Random chance to spawn a minor alert
-        if (prevEvents.length < 6 && Math.random() > 0.85) {
-          const rand = Math.random();
-          let newEvt: EventAlert;
-          if (rand > 0.6) {
-            newEvt = {
-              id: `evt-${Date.now()}`,
-              type: 'medical',
-              title: 'Minor Heat Exhaustion',
-              description: 'Spectator requested ice pack in North Stand Section N8.',
-              timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-              zoneId: 'zone-north-stand',
-              severity: 'low',
-              resolved: false,
-              x: 460 + Math.random() * 40,
-              y: 90 + Math.random() * 30,
-            };
-          } else {
-            newEvt = {
-              id: `evt-${Date.now()}`,
-              type: 'fight',
-              title: 'Verbal Altercation',
-              description: 'Stewards dispatched to de-escalate argument in Section S2.',
-              timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-              zoneId: 'zone-south-stand',
-              severity: 'medium',
-              resolved: false,
-              x: 350 + Math.random() * 80,
-              y: 470 + Math.random() * 30,
-            };
-          }
-          return [...prevEvents, newEvt];
-        }
-
-        return prevEvents;
-      });
-    }, 4000);
-
-    return () => clearInterval(timer);
-  }, []);
+    setEvents(activeAlarms);
+  }, [store.crowdMetrics, store.incidents]);
 
   // Update selected zone data in drawer when zones shift
   useEffect(() => {

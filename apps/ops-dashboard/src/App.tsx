@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useOpsStore } from './store/opsStore';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { Sidebar } from './components/Sidebar';
 import { Topbar } from './components/Topbar';
@@ -8,6 +10,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { Dashboard } from './pages/Dashboard';
 import { Simulation } from './pages/Simulation';
+import { PredictionCenter } from './pages/PredictionCenter';
 import { CrowdMonitoring } from './pages/CrowdMonitoring';
 import { AICommandCenter } from './pages/AICommandCenter';
 import { EmergencyManagement } from './pages/EmergencyManagement';
@@ -17,6 +20,39 @@ import { UserManagement } from './pages/UserManagement';
 import { Settings } from './pages/Settings';
 
 export const App: React.FC = () => {
+  const demoModeActive = useOpsStore((state) => state.demoModeActive);
+  const simulationStatus = useOpsStore((state) => state.simulationStatus);
+  const simulationSpeed = useOpsStore((state) => state.simulationSpeed);
+  const triggerEvent = useOpsStore((state) => state.triggerEvent);
+  const notifications = useOpsStore((state) => state.notifications);
+  const removeNotification = useOpsStore((state) => state.removeNotification);
+
+  // Central Event Bus Scheduler for Demo Mode
+  useEffect(() => {
+    if (!demoModeActive || simulationStatus !== 'running') return;
+    
+    const eventKeys = [
+      'CROWD_SURGE', 
+      'MEDICAL_EMERGENCY', 
+      'LOST_CHILD', 
+      'SUSPICIOUS_PACKAGE', 
+      'SECURITY_BREACH', 
+      'WEATHER_ALERT', 
+      'VIP_ARRIVAL'
+    ];
+    
+    const tick = () => {
+      const randomKey = eventKeys[Math.floor(Math.random() * eventKeys.length)];
+      triggerEvent(randomKey);
+    };
+
+    // Auto-generate event every 8-12 seconds scaled by simulation speed
+    const baseInterval = (8000 + Math.random() * 4000) / simulationSpeed;
+    const interval = setInterval(tick, baseInterval);
+    
+    return () => clearInterval(interval);
+  }, [demoModeActive, simulationStatus, simulationSpeed, triggerEvent]);
+
   return (
     <Routes>
       {/* Auth Public Routes */}
@@ -28,7 +64,46 @@ export const App: React.FC = () => {
         <Route
           path="/*"
           element={
-            <div className="flex bg-[#120A1D] h-screen w-screen overflow-hidden text-[#F8FAFC]">
+            <div className="flex bg-[#120A1D] h-screen w-screen overflow-hidden text-[#F8FAFC] relative">
+              
+              {/* Toast Notification Container */}
+              <div className="fixed top-6 right-6 z-[999] flex flex-col space-y-3 max-w-sm pointer-events-none">
+                <AnimatePresence>
+                  {notifications.map((notif) => (
+                    <motion.div
+                      key={notif.id}
+                      initial={{ opacity: 0, x: 100, scale: 0.9 }}
+                      animate={{ opacity: 1, x: 0, scale: 1 }}
+                      exit={{ opacity: 0, x: 50, scale: 0.95 }}
+                      className={`pointer-events-auto border p-4 rounded-2xl shadow-2xl backdrop-blur-lg flex justify-between items-start space-x-3 w-[320px] ${
+                        notif.priority === 'critical'
+                          ? 'border-red-500/40 bg-red-950/85 text-red-100'
+                          : notif.priority === 'high'
+                          ? 'border-orange-500/40 bg-orange-950/85 text-orange-100'
+                          : notif.priority === 'medium'
+                          ? 'border-yellow-500/40 bg-yellow-950/85 text-yellow-100'
+                          : 'border-[#4A3267]/40 bg-[#231634]/95 text-white'
+                      }`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[11px] font-black uppercase tracking-wider font-display flex items-center space-x-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                          <span>{notif.title}</span>
+                        </div>
+                        <p className="text-[10px] opacity-90 mt-1 leading-relaxed">{notif.message}</p>
+                        <span className="text-[8px] opacity-55 mt-1.5 block font-mono">{notif.timestamp}</span>
+                      </div>
+                      <button
+                        onClick={() => removeNotification(notif.id)}
+                        className="text-white/40 hover:text-white p-0.5 text-xs font-mono font-bold leading-none"
+                      >
+                        ✕
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+
               <Sidebar />
               <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Topbar />
@@ -36,6 +111,7 @@ export const App: React.FC = () => {
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/simulation" element={<Simulation />} />
+                    <Route path="/prediction" element={<PredictionCenter />} />
                     <Route path="/crowd" element={<CrowdMonitoring />} />
                     <Route path="/ai-command" element={<AICommandCenter />} />
                     <Route path="/emergencies" element={<EmergencyManagement />} />

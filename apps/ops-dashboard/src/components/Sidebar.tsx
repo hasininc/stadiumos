@@ -9,6 +9,7 @@ import {
   Compass,
   ShoppingCart,
   Settings,
+  TrendingUp,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {

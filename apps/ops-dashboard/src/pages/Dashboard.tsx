@@ -118,19 +118,11 @@ export const Dashboard: React.FC = () => {
     { agent_name: 'Concessions Forecaster', response_text: 'Beverage stocks at East Concourse Kiosk 3 will deplete in 15 minutes. Dispatch stock replenishing runner from central hub.', recommended_actions: ['Dispatch replenish runner'] }
   ];
 
-  const [activeRecommendations, setActiveRecommendations] = useState(fallbackRecommendations);
-  const [activeIncidents, setActiveIncidents] = useState(fallbackIncidents);
-  const [timelineEvents, setTimelineEvents] = useState([
-    { time: '22:04:12', text: 'Crowd analytics detected 91% occupancy threshold breach at Gate A.', type: 'alert' },
-    { time: '22:02:45', text: 'Emergency dispatcher registered Heat Stress incident in stand Section 102.', type: 'incident' },
-    { time: '21:58:30', text: 'Volunteer Squad Delta deployed to North Stand stairs for queue control.', type: 'volunteer' },
-    { time: '21:55:10', text: 'Water stocks replenished at central Concourse Vendor Zone 1.', type: 'vendor' },
-  ]);
-
-  // Combine real store data with rich fallback structures
-  const displayZones = store.crowdMetrics.length > 0 ? store.crowdMetrics : fallbackZones;
-  const displayIncidents = store.incidents.length > 0 ? store.incidents.filter(i => i.status !== 'Resolved') : activeIncidents;
-  const displayRecommendations = store.recommendations.length > 0 ? store.recommendations : activeRecommendations;
+  // Sync display with global store
+  const displayZones = store.crowdMetrics;
+  const displayIncidents = store.incidents;
+  const displayRecommendations = store.recommendations;
+  const timelineEvents = store.timelineEvents;
 
   useEffect(() => {
     wsClient.connectAll();
@@ -163,13 +155,16 @@ export const Dashboard: React.FC = () => {
     // Add to timeline
     const now = new Date();
     const timeStr = now.toTimeString().split(' ')[0];
-    setTimelineEvents(prev => [
-      { time: timeStr, text: `AI Action Executed: "${action}" (triggered via Command Console)`, type: 'action' },
-      ...prev
-    ]);
+    
+    useOpsStore.setState((state) => ({
+      timelineEvents: [
+        { id: `t-act-${Date.now()}`, time: timeStr, text: `AI Action Executed: "${action}" (triggered via Command Console)`, type: 'action' },
+        ...state.timelineEvents
+      ]
+    }));
 
-    // Remove recommendation from the live list to simulate completion
-    setActiveRecommendations(prev => prev.filter(r => !r.recommended_actions?.includes(action)));
+    // Alert toast
+    store.addNotification('AI Recommendation Executed', `Action "${action}" deployed.`, 'low');
 
     setTimeout(() => {
       setSimulationAlert(null);
@@ -177,14 +172,8 @@ export const Dashboard: React.FC = () => {
   };
 
   const resolveIncidentSimulation = (id: string, title: string) => {
-    setActiveIncidents(prev => prev.filter(i => i.id !== id));
-    
-    const now = new Date();
-    const timeStr = now.toTimeString().split(' ')[0];
-    setTimelineEvents(prev => [
-      { time: timeStr, text: `Emergency Incident RESOLVED: "${title}"`, type: 'resolve' },
-      ...prev
-    ]);
+    store.resolveIncident(id);
+    store.addNotification('Incident Resolved', `Incident "${title}" cleared from log.`, 'low');
   };
 
   const totalHeadcount = displayZones.reduce((acc, curr) => acc + curr.headcount, 0) + 72000; // Adding base seating count
