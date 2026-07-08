@@ -4,13 +4,22 @@ from fastapi.responses import JSONResponse
 import json
 import time
 from app.core.config import settings
-from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors, prediction, copilot
+from app.api.v1.endpoints import auth, users, crowd, notifications, emergencies, navigation, vendors, prediction, copilot, health
 from app.core.security_layer import SecureHeadersMiddleware
 from app.db.session import engine, Base
 from app.db.seed import seed_database
 from shared.utils.error_handlers import ApplicationError
 from app.core.websocket import live_ws_manager
 import logging
+import uuid
+from app.core.env_validator import validate_environment
+from app.core.logging_config import setup_structured_logging
+
+# Run environment validation before the app boots
+validate_environment()
+
+# Setup JSON structured logging
+setup_structured_logging()
 
 # Ensure database tables exist (Development fallbacks)
 Base.metadata.create_all(bind=engine)
@@ -34,6 +43,16 @@ app.add_middleware(
 
 # Global Zero-Trust Secure Headers and Rate Limiter Middleware
 app.add_middleware(SecureHeadersMiddleware)
+
+@app.middleware("http")
+async def request_id_middleware(request: Request, call_next):
+    request_id = request.headers.get("X-Request-ID", str(uuid.uuid4()))
+    # We can inject this into logs by modifying the logger factory, but for simplicity
+    # we just attach it to the request state and return it in headers.
+    request.state.request_id = request_id
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = request_id
+    return response
 
 # Exception handlers mapping
 @app.exception_handler(ApplicationError)
@@ -62,9 +81,7 @@ app.include_router(navigation.router, prefix=f"{settings.API_V1_STR}/navigation"
 app.include_router(vendors.router, prefix=f"{settings.API_V1_STR}/vendors", tags=["vendors"])
 app.include_router(prediction.router, prefix=f"{settings.API_V1_STR}/predict", tags=["prediction"])
 app.include_router(copilot.router, prefix=f"{settings.API_V1_STR}/copilot", tags=["copilot"])
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+app.include_router(health.router, prefix="/health", tags=["health"])
 
 @app.websocket("/ws/live")
 async def websocket_live_endpoint(websocket: WebSocket):

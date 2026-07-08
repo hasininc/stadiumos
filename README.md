@@ -7,19 +7,14 @@ Welcome to the production-ready monorepo for **StadiumOS**. This repository is s
 
 ## 1. Directory Structure
 
-```
+```text
 stadiumos-monorepo/
 ├── .github/                    # CI/CD Workflows (GitHub Actions)
-│   └── workflows/
-│       └── ci-cd.yml
-├── apps/                       # Executable applications
-│   ├── fan-mobile/             # React Native Spectator portal
-│   ├── volunteer-mobile/       # React Native Staff portal
-│   ├── ops-dashboard/          # React visual command console
-│   ├── backend-express/        # Express.js real-time event service
-│   ├── backend-fastapi/        # FastAPI ML integration service
-│   ├── cv-edge/                # Edge YOLOv8 & DeepStream scripts
-│   └── ai-orchestrator/        # LangGraph agent orchestrator node
+├── apps/                       # Frontend Applications & Edge Services
+│   ├── ops-dashboard/          # React Operations Dashboard (Vite)
+│   └── cv-edge/                # Edge YOLOv8 & DeepStream scripts
+├── backend/                    # Core Backend Services
+│   └── fastapi-service/        # Core FastAPI backend, WebSockets, & AI Copilot
 ├── libs/                       # Shared modules & domain packages
 │   ├── shared/                 # Multi-language helper utilities
 │   ├── schemas/                # Protobuf and database schemas
@@ -62,14 +57,17 @@ stadiumos-monorepo/
     ```bash
     cp .env.template .env
     ```
-4.  Run the real-time Express.js backend event service:
-    ```bash
-    nx serve backend-express
-    ```
-5.  Run the React Operations Dashboard:
-    ```bash
-    nx serve ops-dashboard
-    ```
+### Quick Demo via Docker
+
+To run the full stack (Database, Cache, Event Bus, Backend, Edge CV, Frontend) instantly:
+
+```bash
+docker-compose up --build -d
+```
+
+Once running, navigate to the Operations Dashboard at `http://localhost:3000` and click the **"Start Match Simulation"** button to see the platform spring to life.
+
+For more details, see [DEMO.md](DEMO.md).
 
 ---
 
