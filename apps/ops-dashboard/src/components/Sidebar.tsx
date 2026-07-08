@@ -1,6 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import {
+  LayoutDashboard,
+  Users,
+  Cpu,
+  ShieldAlert,
+  Compass,
+  ShoppingCart,
+  Settings,
+} from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuth();
@@ -14,14 +23,14 @@ export const Sidebar: React.FC = () => {
   };
 
   const navItems = [
-    { to: '/', label: 'Dashboard Hub', roles: ['Security Staff', 'Medical Staff', 'Operations Manager'] },
-    { to: '/crowd', label: 'Crowd Intelligence', roles: ['Security Staff', 'Operations Manager'] },
-    { to: '/ai-command', label: 'AI Command Center', roles: ['Operations Manager'] },
-    { to: '/emergencies', label: 'Emergency Response', roles: ['Security Staff', 'Medical Staff', 'Operations Manager'] },
-    { to: '/navigation', label: 'Smart Navigation', roles: ['Security Staff', 'Operations Manager'] },
-    { to: '/vendors', label: 'Vendor Operations', roles: ['Operations Manager'] },
-    { to: '/users', label: 'User Management', roles: ['Administrator'] },
-    { to: '/settings', label: 'System Settings', roles: ['Administrator', 'Operations Manager'] }
+    { to: '/', label: 'Dashboard Hub', icon: LayoutDashboard, roles: ['Security Staff', 'Medical Staff', 'Operations Manager'] },
+    { to: '/crowd', label: 'Crowd Intelligence', icon: Users, roles: ['Security Staff', 'Operations Manager'] },
+    { to: '/ai-command', label: 'AI Command Center', icon: Cpu, roles: ['Operations Manager'] },
+    { to: '/emergencies', label: 'Emergency Response', icon: ShieldAlert, roles: ['Security Staff', 'Medical Staff', 'Operations Manager'] },
+    { to: '/navigation', label: 'Smart Navigation', icon: Compass, roles: ['Security Staff', 'Operations Manager'] },
+    { to: '/vendors', label: 'Vendor Operations', icon: ShoppingCart, roles: ['Operations Manager'] },
+    { to: '/users', label: 'User Management', icon: Users, roles: ['Administrator'] },
+    { to: '/settings', label: 'System Settings', icon: Settings, roles: ['Administrator', 'Operations Manager'] }
   ];
 
   return (
@@ -48,6 +57,7 @@ export const Sidebar: React.FC = () => {
               }`
             }
           >
+            <LayoutDashboard className="w-4 h-4 mr-3" />
             Dashboard Hub
           </NavLink>
         )}
@@ -65,6 +75,7 @@ export const Sidebar: React.FC = () => {
                   }`
                 }
               >
+                <item.icon className="w-4 h-4 mr-3" />
                 {item.label}
               </NavLink>
             )
@@ -82,3 +93,4 @@ export const Sidebar: React.FC = () => {
   );
 };
 export default Sidebar;
+
