@@ -12,8 +12,10 @@ import requests
 import json
 import threading
 from typing import Dict, Any, Optional
+from dotenv import load_dotenv
+load_dotenv()
 
-
+# pyrefly: ignore [missing-import]
 import websocket
 
 logger = logging.getLogger("cv-edge")

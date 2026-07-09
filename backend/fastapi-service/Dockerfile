@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r backend/fastapi-service/requirements.txt
 
 COPY backend/fastapi-service/ ./backend/fastapi-service/
 COPY shared/ ./shared/
+COPY ml/ ./ml/
 
 WORKDIR /workspace/backend/fastapi-service
 
