@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Response, status, Request
+from fastapi import APIRouter, Depends, Query, UploadFile, File, Response, status, Request
 from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_current_user, PermissionChecker
 from app.models.auth import User
@@ -22,6 +22,11 @@ admin_or_ops = PermissionChecker(["Administrator", "Operations Manager"])
 
 @router.get("/me", response_model=UserProfileFullResponse)
 def get_my_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Get own profile details.
+    
+    Returns the full user profile including accessibility preferences and roles.
+    """
     service = ProfileService(db)
     return service.get_full_user(current_user.id)
 
@@ -32,6 +37,11 @@ def update_my_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Update own profile details.
+    
+    Edits personal profile information and logs the modification trace history.
+    """
     service = ProfileService(db)
     service.update_profile(current_user.id, profile_in)
     service.log_user_action(
@@ -48,6 +58,11 @@ def update_my_accessibility(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Update own accessibility preferences.
+    
+    Modifies wheelchair assistance or custom navigation helper flags.
+    """
     service = ProfileService(db)
     service.update_accessibility(current_user.id, access_in)
     return service.get_full_user(current_user.id)
@@ -58,6 +73,11 @@ def add_my_emergency_contact(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Add a personal emergency contact.
+    
+    Links a new contact to receive alerts if safety escalations occur.
+    """
     service = ProfileService(db)
     return service.add_emergency_contact(current_user.id, contact_in)
 
@@ -67,6 +87,11 @@ def remove_my_emergency_contact(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Remove a personal emergency contact.
+    
+    Deletes the link to the specified emergency contact.
+    """
     service = ProfileService(db)
     service.delete_emergency_contact(current_user.id, contact_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -83,22 +108,42 @@ def search_users(
     current_user: User = Depends(admin_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Search and list users.
+    
+    Enforces Administrator or Operations Manager role permissions to view the user registry.
+    """
     service = ProfileService(db)
     users, _ = service.list_users(skip, limit, q, role, status, sort_by, sort_order)
     return users
 
 @router.get("/activity", response_model=List[UserActivityLogResponse])
 def get_my_activity(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Get own audit activity logs.
+    
+    Returns historical operations logged by the session owner.
+    """
     service = ProfileService(db)
     return service.get_activity_history(current_user.id)
 
 @router.get("/{id}", response_model=UserProfileFullResponse)
 def get_user_by_id(id: str, current_user: User = Depends(admin_or_ops), db: Session = Depends(get_db)):
+    """
+    Retrieve user by ID.
+    
+    Restricted to operations and administrative teams.
+    """
     service = ProfileService(db)
     return service.get_full_user(id)
 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(id: str, current_user: User = Depends(admin_or_ops), db: Session = Depends(get_db)):
+    """
+    Delete a user account.
+    
+    Removes user registration and revokes authorization access.
+    """
     service = ProfileService(db)
     service.delete_user_account(id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
@@ -110,6 +155,11 @@ def update_status(
     current_user: User = Depends(admin_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Update a user's active status.
+    
+    Allows toggle activation/deactivation flags of users.
+    """
     service = ProfileService(db)
     service.change_user_status(current_user.id, id, status_in.is_active)
     return service.get_full_user(id)
@@ -121,6 +171,11 @@ def update_role(
     current_user: User = Depends(admin_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Modify user authorization roles.
+    
+    Assigns role permissions to users (e.g. Operations Manager, Security Staff).
+    """
     service = ProfileService(db)
     service.assign_user_role(current_user.id, id, role_in.role_name)
     return service.get_full_user(id)
@@ -131,6 +186,11 @@ async def upload_profile_image(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Upload profile avatar image.
+    
+    Saves the user avatar file to storage buckets and updates their URL target.
+    """
     # Mocking File Uploads to Object Storage (returning dynamic placeholder URL)
     mock_url = f"https://storage.googleapis.com/stadiumos-avatars/{current_user.id}_{file.filename}"
     service = ProfileService(db)

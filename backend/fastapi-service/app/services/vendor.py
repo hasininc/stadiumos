@@ -1,12 +1,12 @@
 from sqlalchemy.orm import Session
 from app.repositories.vendor import VendorRepository
 from app.models.vendor import Vendor, Product, VendorInventory, RestockOrder
-from app.schemas.vendor import VendorCreate, ProductCreate, InventoryCreate, InventoryUpdate, RestockRequest, VendorAnalyticsResponse
+from app.schemas.vendor import VendorCreate, ProductCreate, InventoryCreate, RestockRequest, VendorAnalyticsResponse
 from app.core.redis_client import redis_client
 from app.core.kafka_client import kafka_client
 from app.core.websocket import ws_manager
 from shared.utils.error_handlers import ValidationError
-from typing import List, Optional
+from typing import List
 from datetime import datetime
 
 class VendorService:

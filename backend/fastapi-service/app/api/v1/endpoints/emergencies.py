@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status, HTTPException
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, get_current_user, PermissionChecker
+from app.api.deps import get_db, PermissionChecker
 from app.models.auth import User
 from app.schemas.emergency import (
     IncidentCreate,
@@ -31,6 +31,11 @@ def create_incident(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Create a new emergency incident.
+    
+    Logs a new safety or medical incident and triggers broadcast dispatches.
+    """
     service = EmergencyService(db)
     return service.create_incident(current_user.id, incident_in)
 
@@ -44,6 +49,11 @@ def list_incidents(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    List all emergency incidents.
+    
+    Lists safety incident records filtered by status, severity, and zone.
+    """
     service = EmergencyService(db)
     incidents, _ = service.list_incidents(skip, limit, status, severity, zone_id)
     return incidents
@@ -53,6 +63,11 @@ def get_dashboard(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Get emergency dashboard metrics.
+    
+    Returns total counts of active, resolving, and escalated incident metrics.
+    """
     service = EmergencyService(db)
     return service.get_dashboard_metrics()
 
@@ -62,6 +77,11 @@ def get_incident_by_id(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Get incident record by ID.
+    
+    Retrieves detailed values of the specified emergency incident.
+    """
     service = EmergencyService(db)
     incident = service.repo.get_incident(id)
     if not incident:
@@ -75,6 +95,11 @@ def update_incident_status(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Update incident status.
+    
+    Sets the workflow status state of the specified safety incident.
+    """
     service = EmergencyService(db)
     return service.change_status(current_user.id, id, status_in)
 
@@ -85,6 +110,11 @@ def assign_incident_responder(
     current_user: User = Depends(ops_or_admin),
     db: Session = Depends(get_db)
 ):
+    """
+    Assign incident responder.
+    
+    Links an active security or medical responder to handle the emergency.
+    """
     service = EmergencyService(db)
     return service.assign_incident(current_user.id, id, assign_in)
 
@@ -95,6 +125,11 @@ def escalate_incident(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Escalate safety incident.
+    
+    Elevates incident severity level and dispatches additional alerts to operations teams.
+    """
     service = EmergencyService(db)
     return service.escalate_incident(current_user.id, id, escalate_in)
 
@@ -105,6 +140,11 @@ def resolve_incident(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Resolve safety incident.
+    
+    Closes the incident report log with details on resolution actions.
+    """
     service = EmergencyService(db)
     return service.resolve_incident(current_user.id, id, resolve_in)
 
@@ -114,6 +154,11 @@ def get_incident_history(
     current_user: User = Depends(security_or_medical_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Get incident log history.
+    
+    Yields audit trail details of status updates and dispatcher notes for the incident.
+    """
     service = EmergencyService(db)
     incident = service.repo.get_incident(id)
     if not incident:

@@ -2,9 +2,9 @@ from sqlalchemy.orm import Session
 from app.repositories.profile import ProfileRepository
 from app.repositories.user import UserRepository
 from app.models.user import UserProfile, AccessibilityPreference, EmergencyContact, UserActivityLog, UserAuditLog
-from app.models.auth import User, Role
+from app.models.auth import User
 from app.schemas.user import UserProfileUpdate, AccessibilityUpdate, EmergencyContactCreate
-from shared.utils.error_handlers import ValidationError, AuthorizationError
+from shared.utils.error_handlers import ValidationError
 from typing import List, Optional, Tuple
 
 class ProfileService:

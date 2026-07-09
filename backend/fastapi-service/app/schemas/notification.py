@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 from datetime import datetime
 
 class NotificationCreate(BaseModel):
@@ -22,8 +22,7 @@ class NotificationResponse(BaseModel):
     is_read: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class NotificationBroadcast(BaseModel):
     roles: List[str] = Field(..., description="Target role scopes to receive broadcast")
@@ -43,5 +42,9 @@ class NotificationPreferenceResponse(BaseModel):
     channel: str
     is_enabled: bool
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
+class BroadcastResponse(BaseModel):
+    message: str = Field(..., description="API broadcast confirmation status message", json_schema_extra={"example": "Role broadcast completed"})
+    dispatched_records_count: int = Field(..., description="Total count of successfully dispatched notification records", json_schema_extra={"example": 12})
+

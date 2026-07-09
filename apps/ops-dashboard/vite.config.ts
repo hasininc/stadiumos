@@ -17,24 +17,28 @@ export default defineConfig(({ mode }) => {
   validateEnv(mode);
   
   return {
-  plugins: [react()],
-  resolve: {
-    alias: {
-      '@stadiumos/shared': path.resolve(__dirname, '../../../libs/shared'),
-      '@stadiumos/schemas': path.resolve(__dirname, '../../../libs/schemas'),
-      '@stadiumos/components': path.resolve(__dirname, '../../../libs/components'),
-      '@/': path.resolve(__dirname, './src/'),
+    plugins: [react()],
+    resolve: {
+      alias: {
+        '@stadiumos/shared': path.resolve(__dirname, '../../libs/shared'),
+        '@stadiumos/schemas': path.resolve(__dirname, '../../libs/schemas'),
+        '@stadiumos/components': path.resolve(__dirname, '../../libs/components'),
+        '@/': path.resolve(__dirname, './src/'),
+      },
     },
-  },
-  server: {
-    port: 3000,
-    host: true,
-    strictPort: false,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        ws: true,
+    server: {
+      port: 3000,
+      host: true,
+      strictPort: false,
+      proxy: {
+        '/api': {
+          target: 'http://localhost:8000',
+          changeOrigin: true,
+        },
+        '/ws': {
+          target: 'ws://localhost:8000',
+          ws: true,
+        },
       },
     },
   };

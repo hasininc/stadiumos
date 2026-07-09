@@ -6,7 +6,7 @@ so the YOLO detector has actual frames to process when no physical camera is ava
 import cv2
 import numpy as np
 import random
-import math
+
 from typing import List, Tuple
 
 

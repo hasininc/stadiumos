@@ -6,7 +6,7 @@ from app.db.session import SessionLocal
 from app.core.security import decode_token
 from app.repositories.user import UserRepository
 from app.models.auth import User
-from shared.utils.error_handlers import AuthorizationError
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 

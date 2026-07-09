@@ -20,4 +20,4 @@ COPY libs/ ./libs/
 
 WORKDIR /workspace/apps/cv-edge
 
-CMD ["python", "main.py"]
+CMD ["python", "app/main_edge.py"]

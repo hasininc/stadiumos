@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 from typing import List, Optional, Literal
 from datetime import datetime
 
@@ -7,8 +7,7 @@ class RoleBase(BaseModel):
     name: str
     description: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Input schema for registration
 class UserCreate(BaseModel):
@@ -25,8 +24,7 @@ class UserResponse(BaseModel):
     created_at: datetime
     roles: List[RoleBase] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 # Input schema for logins
 class LoginRequest(BaseModel):

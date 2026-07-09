@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status, Response
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, get_current_user, PermissionChecker
+from app.api.deps import get_db, PermissionChecker
 from app.models.auth import User
 from app.schemas.crowd import (
     ZoneResponse,
@@ -11,6 +11,7 @@ from app.schemas.crowd import (
     ThresholdUpdate,
     HeatmapDataResponse
 )
+from app.schemas.common import MessageResponse
 from app.services.crowd import CrowdService
 from app.core.websocket import ws_manager
 from typing import List, Optional
@@ -28,11 +29,21 @@ def get_zones(
     current_user: User = Depends(all_staff),
     db: Session = Depends(get_db)
 ):
+    """
+    Get all stadium zones.
+    
+    Lists the occupancy thresholds and details of active stadium seating or gate zones.
+    """
     service = CrowdService(db)
     return service.get_all_zones(stadium_id)
 
 @router.get("/zones/{id}", response_model=ZoneResponse)
 def get_zone_by_id(id: str, current_user: User = Depends(all_staff), db: Session = Depends(get_db)):
+    """
+    Get stadium zone by ID.
+    
+    Returns seat capacities and crowd settings for the specified zone.
+    """
     service = CrowdService(db)
     return service.get_zone(id)
 
@@ -42,6 +53,11 @@ async def create_snapshot(
     current_user: User = Depends(security_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Record crowd headcount snapshot.
+    
+    Logs active crowd estimates and updates zone congestion levels.
+    """
     service = CrowdService(db)
     return await service.record_snapshot(snapshot_in)
 
@@ -51,6 +67,11 @@ async def create_alert(
     current_user: User = Depends(security_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Raise a custom crowd congestion alert.
+    
+    Triggers local push alerts and broadcasts websocket events for safety responses.
+    """
     service = CrowdService(db)
     return await service.raise_custom_alert(alert_in)
 
@@ -60,22 +81,37 @@ def get_live_alerts(
     current_user: User = Depends(all_staff),
     db: Session = Depends(get_db)
 ):
+    """
+    Get active live crowd alerts.
+    
+    Lists unresolved safety alerts triggered by occupancy overflow.
+    """
     service = CrowdService(db)
     return service.get_live_alerts(zone_id)
 
-@router.patch("/zones/{id}/threshold", status_code=status.HTTP_200_OK)
+@router.patch("/zones/{id}/threshold", response_model=MessageResponse, status_code=status.HTTP_200_OK)
 def update_zone_threshold(
     id: str,
     threshold_in: ThresholdUpdate,
     current_user: User = Depends(ops_or_admin),
     db: Session = Depends(get_db)
 ):
+    """
+    Update zone occupancy thresholds.
+    
+    Configures critical limit indicators for crowd congestion trigger monitors.
+    """
     service = CrowdService(db)
     service.modify_thresholds(id, threshold_in)
     return {"message": "Zone occupancy thresholds updated successfully"}
 
 @router.get("/heatmap", response_model=List[HeatmapDataResponse])
 def get_heatmap(current_user: User = Depends(all_staff), db: Session = Depends(get_db)):
+    """
+    Get crowd heatmap metrics.
+    
+    Yields seating capacity ratios and absolute coordinates for density displays.
+    """
     service = CrowdService(db)
     return service.get_heatmap_metrics()
 
@@ -86,6 +122,11 @@ def get_history(
     current_user: User = Depends(all_staff),
     db: Session = Depends(get_db)
 ):
+    """
+    Get historical snapshot logs.
+    
+    Lists historical attendance and crowd snapshots registered in a specific zone.
+    """
     service = CrowdService(db)
     return service.get_historical_logs(zone_id, limit)
 

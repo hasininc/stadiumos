@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.auth import User, Role, RefreshToken, UserRoles
+from app.models.auth import User, Role, RefreshToken
 from typing import Optional
 
 class UserRepository:

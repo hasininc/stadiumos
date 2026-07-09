@@ -5,7 +5,7 @@ operational recommendations based on live telemetry and what-if scenarios.
 """
 import json
 import logging
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 from pydantic import BaseModel, Field
 
 from app.services.llm_providers import create_llm_provider, LLMResponse

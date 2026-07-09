@@ -5,6 +5,7 @@ Handles:
   - REST POST of crowd snapshots
   - WebSocket connection for real-time event broadcast (resilient reconnect)
 """
+import os
 import time
 import logging
 import requests
@@ -49,9 +50,9 @@ class BackendIntegrationClient:
     def authenticate(self) -> bool:
         login_url = f"{self.api_url}/api/v1/auth/login"
         payload = {
-            "email": "operator@stadiumos.dev",
-            "password": "operator123",
-        }
+            "email": os.getenv("CV_EDGE_OPERATOR_EMAIL", "operator@stadiumos.dev"),
+            "password": os.getenv("CV_EDGE_OPERATOR_PASSWORD", "operator123"),
+}
         try:
             res = requests.post(login_url, json=payload, timeout=5)
             if res.status_code == 200:

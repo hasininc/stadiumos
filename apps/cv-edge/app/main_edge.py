@@ -1,10 +1,11 @@
-import os
+
 import sys
 import logging
 import signal
 
+from pathlib import Path
 # Set PYTHONPATH to contain app folder
-sys.path.append("/Users/hasininc/StadiumOS/apps/cv-edge")
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from app.stream.stream_processor import StreamProcessor
 

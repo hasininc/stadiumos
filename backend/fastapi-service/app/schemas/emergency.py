@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 from datetime import datetime
 
 class IncidentCreate(BaseModel):
@@ -22,8 +22,7 @@ class IncidentResponse(BaseModel):
     resolved_at: Optional[datetime]
     sla_due_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class IncidentStatusUpdate(BaseModel):
     status: str = Field(..., pattern="^(Reported|Dispatched|Active|Resolving|Resolved)$")
@@ -45,8 +44,7 @@ class IncidentHistoryResponse(BaseModel):
     notes: Optional[str]
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class SeverityCount(BaseModel):
     severity: str

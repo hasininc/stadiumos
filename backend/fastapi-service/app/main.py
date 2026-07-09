@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, status, WebSocket, WebSocketDisconnect
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import json
@@ -55,6 +56,25 @@ async def request_id_middleware(request: Request, call_next):
     return response
 
 # Exception handlers mapping
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    details = []
+    for error in exc.errors():
+        loc = ".".join(str(x) for x in error.get("loc", []))
+        details.append({
+            "field": loc,
+            "message": error.get("msg")
+        })
+    logger.warning(f"Request validation failed: {details}")
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error_code": "VALIDATION_ERROR",
+            "message": "Request validation failed",
+            "details": details
+        }
+    )
+
 @app.exception_handler(ApplicationError)
 async def application_error_handler(request: Request, exc: ApplicationError):
     logger.error(f"Application exception error: {exc.message} - Code: {exc.code}")

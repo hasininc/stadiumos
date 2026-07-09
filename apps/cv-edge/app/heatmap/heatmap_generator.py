@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from typing import List, Tuple, Any
+# No typing imports needed
 
 class HeatmapGenerator:
     def __init__(self, width: int = 640, height: int = 480):

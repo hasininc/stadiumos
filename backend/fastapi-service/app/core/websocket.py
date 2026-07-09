@@ -1,8 +1,6 @@
 import asyncio
-import json
 import logging
-import random
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 from fastapi import WebSocket
 from app.services.copilot_context import context_collector
 

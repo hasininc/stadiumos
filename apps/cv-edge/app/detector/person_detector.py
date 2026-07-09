@@ -1,7 +1,7 @@
 import logging
 import torch
 from ultralytics import YOLO
-from typing import List, Tuple, Any
+from typing import Any
 
 logger = logging.getLogger("cv-edge")
 

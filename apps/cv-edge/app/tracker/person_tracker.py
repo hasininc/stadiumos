@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, Tuple, List, Set
+from typing import Dict, Tuple, Set
 
 logger = logging.getLogger("cv-edge")
 

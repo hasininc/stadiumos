@@ -9,9 +9,8 @@ from app.schemas.emergency import (
 )
 from app.core.redis_client import redis_client
 from app.core.kafka_client import kafka_client
-from app.core.websocket import ws_manager
-from shared.utils.error_handlers import ValidationError, AuthorizationError
-from typing import List, Optional, Tuple
+from shared.utils.error_handlers import ValidationError
+from typing import Optional
 
 class EmergencyService:
     def __init__(self, db: Session):

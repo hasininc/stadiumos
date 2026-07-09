@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 from datetime import datetime
 
 class VendorCreate(BaseModel):
@@ -11,8 +11,7 @@ class VendorResponse(VendorCreate):
     id: str
     status: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProductCreate(BaseModel):
     name: str = Field(..., min_length=3, max_length=255)
@@ -23,8 +22,7 @@ class ProductCreate(BaseModel):
 class ProductResponse(ProductCreate):
     id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class InventoryCreate(BaseModel):
     vendor_id: str
@@ -44,8 +42,7 @@ class InventoryResponse(BaseModel):
     min_threshold: int
     max_capacity: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RestockRequest(BaseModel):
     vendor_id: str
@@ -58,8 +55,7 @@ class RestockOrderResponse(RestockRequest):
     created_at: datetime
     completed_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class VendorAnalyticsResponse(BaseModel):
     vendor_id: str
@@ -68,3 +64,9 @@ class VendorAnalyticsResponse(BaseModel):
     cost_usd: float
     net_profit_usd: float
     popular_products: List[str]
+
+class ProductAnalyticsResponse(BaseModel):
+    most_purchased_category: str = Field(..., description="Top purchased product category name", json_schema_extra={"example": "Food"})
+    hourly_sales_average_usd: float = Field(..., description="Average hourly product sales in USD", json_schema_extra={"example": 124.50})
+    predicted_demand_spike_time: str = Field(..., description="ISO 8601 formatted time of predicted peak product demand", json_schema_extra={"example": "16:30:00Z"})
+

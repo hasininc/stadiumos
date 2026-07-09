@@ -5,7 +5,7 @@ and composes a structured context snapshot for LLM consumption.
 """
 import time
 import logging
-from typing import Any, Optional
+# No imports needed from typing
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 

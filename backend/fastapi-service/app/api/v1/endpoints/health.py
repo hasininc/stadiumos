@@ -1,6 +1,5 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter
 from pydantic import BaseModel
-import os
 import time
 
 router = APIRouter()

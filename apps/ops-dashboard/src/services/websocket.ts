@@ -23,7 +23,7 @@ class WebSocketClient {
     const wsProto = isHttps ? 'wss:' : 'ws:';
     const host = import.meta.env.VITE_API_URL 
       ? import.meta.env.VITE_API_URL.replace(/^https?:\/\//, '')
-      : 'localhost:8000';
+      : window.location.host;
       
     const url = `${wsProto}//${host}/ws/live`;
     console.log(`Connecting to WebSocket gateway at: ${url}`);

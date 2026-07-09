@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
 from datetime import datetime
 
 class StadiumResponse(BaseModel):
@@ -8,15 +8,13 @@ class StadiumResponse(BaseModel):
     location: str
     total_capacity: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ThresholdResponse(BaseModel):
     busy_pct: float
     critical_pct: float
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ZoneResponse(BaseModel):
     id: str
@@ -26,8 +24,7 @@ class ZoneResponse(BaseModel):
     status: str
     thresholds: Optional[ThresholdResponse] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EntranceResponse(BaseModel):
     id: str
@@ -35,8 +32,7 @@ class EntranceResponse(BaseModel):
     zone_id: str
     status: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ExitResponse(BaseModel):
     id: str
@@ -44,8 +40,7 @@ class ExitResponse(BaseModel):
     zone_id: str
     status: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CrowdSnapshotCreate(BaseModel):
     zone_id: str
@@ -58,8 +53,7 @@ class CrowdSnapshotResponse(BaseModel):
     occupancy_pct: float
     recorded_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class CrowdAlertCreate(BaseModel):
     zone_id: str
@@ -74,8 +68,7 @@ class CrowdAlertResponse(BaseModel):
     is_active: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ThresholdUpdate(BaseModel):
     busy_pct: float = Field(..., ge=1.0, le=100.0)

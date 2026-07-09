@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, ConfigDict
 from typing import List, Optional
 from datetime import datetime
 from app.schemas.auth import RoleBase
@@ -16,8 +16,7 @@ class UserProfileResponse(UserProfileBase):
     avatar_url: Optional[str] = None
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AccessibilityBase(BaseModel):
     requires_wheelchair: bool = False
@@ -29,8 +28,7 @@ class AccessibilityUpdate(AccessibilityBase):
     pass
 
 class AccessibilityResponse(AccessibilityBase):
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class EmergencyContactBase(BaseModel):
     contact_name: str
@@ -43,8 +41,7 @@ class EmergencyContactCreate(EmergencyContactBase):
 class EmergencyContactResponse(EmergencyContactBase):
     id: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserProfileFullResponse(BaseModel):
     id: str
@@ -57,8 +54,7 @@ class UserProfileFullResponse(BaseModel):
     accessibility: Optional[AccessibilityResponse] = None
     emergency_contacts: List[EmergencyContactResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class UserStatusUpdate(BaseModel):
     is_active: bool
@@ -73,5 +69,4 @@ class UserActivityLogResponse(BaseModel):
     user_agent: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

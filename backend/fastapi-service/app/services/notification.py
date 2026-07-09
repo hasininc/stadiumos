@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy.orm import Session
 from app.repositories.notification import NotificationRepository
 from app.repositories.user import UserRepository
@@ -11,7 +11,7 @@ from app.core.websocket import ws_manager
 from app.core.fcm_client import fcm_client
 from app.core.twilio_client import twilio_client
 from app.core.sendgrid_client import sendgrid_client
-from shared.utils.error_handlers import ValidationError, AuthorizationError
+from shared.utils.error_handlers import ValidationError
 from typing import List, Optional, Any
 
 logger = logging.getLogger("fastapi")

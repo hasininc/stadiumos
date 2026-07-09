@@ -6,9 +6,8 @@ from app.services.routing_engine import AdjacencyGraph, RoutingEngine
 from app.schemas.navigation import RouteRequest, RouteResponse, RerouteRequest, RouteNodeResponse
 from app.core.redis_client import redis_client
 from app.core.kafka_client import kafka_client
-from app.core.websocket import ws_manager
 from shared.utils.error_handlers import ValidationError
-from typing import List, Optional, Set, Tuple
+from typing import Set, Tuple
 
 logger = logging.getLogger("fastapi")
 

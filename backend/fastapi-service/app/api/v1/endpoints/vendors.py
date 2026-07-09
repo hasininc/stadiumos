@@ -1,22 +1,21 @@
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status, Response, HTTPException
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status, HTTPException
 from sqlalchemy.orm import Session
-from app.api.deps import get_db, get_current_user, PermissionChecker
+from app.api.deps import get_db, PermissionChecker
 from app.models.auth import User
 from app.schemas.vendor import (
     VendorCreate,
     VendorResponse,
-    ProductCreate,
-    ProductResponse,
     InventoryCreate,
     InventoryResponse,
     InventoryUpdate,
     RestockRequest,
     RestockOrderResponse,
-    VendorAnalyticsResponse
+    VendorAnalyticsResponse,
+    ProductAnalyticsResponse
 )
 from app.services.vendor import VendorService
 from app.core.websocket import ws_manager
-from typing import List, Optional
+from typing import List
 import logging
 from datetime import datetime
 
@@ -30,16 +29,31 @@ vendor_or_ops = PermissionChecker(["Vendor", "Operations Manager", "Administrato
 
 @router.get("/", response_model=List[VendorResponse])
 def list_vendors(db: Session = Depends(get_db)):
+    """
+    List all vendors.
+    
+    Lists names, types, and zones of all registered stadium concessions.
+    """
     service = VendorService(db)
     return service.repo.get_all_vendors()
 
 @router.post("/", response_model=VendorResponse, status_code=status.HTTP_201_CREATED)
 def register_vendor(vendor_in: VendorCreate, current_user: User = Depends(ops_or_admin), db: Session = Depends(get_db)):
+    """
+    Register a new vendor.
+    
+    Creates a new vendor profile linked to a specific stadium zone area.
+    """
     service = VendorService(db)
     return service.register_vendor(vendor_in)
 
 @router.get("/inventory", response_model=List[InventoryResponse])
 def list_inventory(current_user: User = Depends(vendor_or_ops), db: Session = Depends(get_db)):
+    """
+    List vendor inventories.
+    
+    Lists stock levels, capacities, and warning thresholds across all products.
+    """
     service = VendorService(db)
     return service.repo.get_all_inventory()
 
@@ -49,6 +63,11 @@ def link_inventory(
     current_user: User = Depends(ops_or_admin),
     db: Session = Depends(get_db)
 ):
+    """
+    Link product inventory to vendor.
+    
+    Assigns a product with custom stock bounds to a specific vendor concessions profile.
+    """
     service = VendorService(db)
     return service.link_inventory(inv_in)
 
@@ -59,11 +78,21 @@ async def update_inventory_stock(
     current_user: User = Depends(vendor_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Update vendor inventory stock.
+    
+    Modifies active counts for the specified inventory record and triggers WebSocket updates.
+    """
     service = VendorService(db)
     return await service.update_stock(id, update_in.current_stock)
 
 @router.get("/inventory/low-stock", response_model=List[InventoryResponse])
 def get_low_stock(current_user: User = Depends(vendor_or_ops), db: Session = Depends(get_db)):
+    """
+    Get low stock inventory.
+    
+    Returns lists of active inventories where the current stock falls below warning thresholds.
+    """
     service = VendorService(db)
     return service.get_low_stock()
 
@@ -73,6 +102,11 @@ async def trigger_restock(
     current_user: User = Depends(vendor_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Trigger restocking order.
+    
+    Creates a new pending supply restock request for a vendor product.
+    """
     service = VendorService(db)
     return await service.trigger_restock_order(req)
 
@@ -82,6 +116,11 @@ async def complete_restock(
     current_user: User = Depends(ops_or_admin),
     db: Session = Depends(get_db)
 ):
+    """
+    Complete restocking order.
+    
+    Confirms delivery arrival and updates current inventory stock numbers.
+    """
     service = VendorService(db)
     return await service.complete_restock_order(id)
 
@@ -91,11 +130,21 @@ def get_vendor_analytics(
     current_user: User = Depends(vendor_or_ops),
     db: Session = Depends(get_db)
 ):
+    """
+    Get vendor sales analytics.
+    
+    Returns total revenues, costs, and popular product counts for the vendor.
+    """
     service = VendorService(db)
     return service.get_vendor_analytics(vendor_id)
 
-@router.get("/analytics/products")
+@router.get("/analytics/products", response_model=ProductAnalyticsResponse)
 def get_products_analytics(current_user: User = Depends(vendor_or_ops), db: Session = Depends(get_db)):
+    """
+    Get product-wide sales analytics.
+    
+    Calculates average hourly sales, predicted demand spikes, and top-purchased categories.
+    """
     service = VendorService(db)
     inventories = service.repo.get_all_inventory()
     products = []
@@ -121,6 +170,11 @@ def get_products_analytics(current_user: User = Depends(vendor_or_ops), db: Sess
 
 @router.get("/{id}", response_model=VendorResponse)
 def get_vendor_by_id(id: str, db: Session = Depends(get_db)):
+    """
+    Get vendor by ID.
+    
+    Returns details of the specified vendor concessions profile.
+    """
     service = VendorService(db)
     vendor = service.repo.get_vendor(id)
     if not vendor:
@@ -130,6 +184,11 @@ def get_vendor_by_id(id: str, db: Session = Depends(get_db)):
 # WebSocket channel for live stock and restocking updates
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket stream for live vendor inventory updates.
+    
+    Connects clients to receive real-time updates regarding inventory adjustments and restocking confirmations.
+    """
     await ws_manager.connect(websocket, None)
     try:
         while True:

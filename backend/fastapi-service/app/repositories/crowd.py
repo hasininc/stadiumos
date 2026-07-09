@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models.crowd import Stadium, Zone, Entrance, Exit, CrowdSnapshot, CrowdAlert, OccupancyThreshold, CrowdHistory
+from app.models.crowd import Stadium, Zone, CrowdSnapshot, CrowdAlert, OccupancyThreshold, CrowdHistory
 from typing import List, Optional
 
 class CrowdRepository:

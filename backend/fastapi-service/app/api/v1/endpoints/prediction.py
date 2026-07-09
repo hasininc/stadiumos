@@ -1,7 +1,7 @@
 import time
 import logging
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import List
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
@@ -14,28 +14,28 @@ router = APIRouter()
 # Pydantic Schemas with Range Validations
 # ──────────────────────────────────────────────
 class PredictionInput(BaseModel):
-    attendance: int = Field(..., ge=0, le=100000, description="Current match attendance", example=64200)
-    stadium_capacity: int = Field(..., ge=10000, le=120000, description="Total seating capacity", example=80000)
-    match_minute: int = Field(..., ge=-90, le=150, description="Match clock minute", example=58)
-    entry_rate_per_min: float = Field(..., ge=0.0, le=2000.0, description="Gate entries per minute", example=420.0)
-    exit_rate_per_min: float = Field(..., ge=0.0, le=2000.0, description="Gate exits per minute", example=115.0)
-    temperature: float = Field(..., ge=-20.0, le=55.0, description="Air temperature in degrees Celsius", example=31.0)
-    humidity: float = Field(..., ge=0.0, le=100.0, description="Humidity percentage", example=63.0)
-    rain_probability: float = Field(..., ge=0.0, le=100.0, description="Rain probability percentage", example=10.0)
-    parking_occupancy: float = Field(..., ge=0.0, le=100.0, description="Parking occupancy rate percentage", example=74.0)
-    metro_arrivals: int = Field(..., ge=0, le=10000, description="Metro arrival rate in passengers/min", example=890)
-    bus_arrivals: int = Field(..., ge=0, le=10000, description="Bus arrival rate in passengers/min", example=410)
-    ticket_scan_rate: float = Field(..., ge=0.0, le=2000.0, description="Ticket validation scans per minute", example=370.0)
-    security_queue_length: float = Field(..., ge=0.0, le=5000.0, description="Security queues count across checkpoints", example=185.0)
-    food_court_density: float = Field(..., ge=0.0, le=100.0, description="Food concourse queue occupancy percentage", example=67.0)
-    restroom_density: float = Field(..., ge=0.0, le=100.0, description="Restroom corridors occupancy percentage", example=49.0)
-    medical_incidents: int = Field(..., ge=0, le=100, description="Active dispatcher medical events", example=2)
-    previous_congestion: float = Field(..., ge=0.0, le=100.0, description="Past window congestion score", example=71.0)
-    gate_open_count: int = Field(..., ge=1, le=100, description="Count of open entry gates", example=14)
-    vip_event: bool = Field(..., description="VIP attendance security active flag", example=False)
-    special_event: bool = Field(..., description="Special high-interest match flag", example=True)
-    holiday: bool = Field(..., description="Holiday matchday schedule indicator", example=False)
-    weekday: str = Field(..., description="Name of the day of the week", example="Sunday")
+    attendance: int = Field(..., ge=0, le=100000, description="Current match attendance", json_schema_extra={"example": 64200})
+    stadium_capacity: int = Field(..., ge=10000, le=120000, description="Total seating capacity", json_schema_extra={"example": 80000})
+    match_minute: int = Field(..., ge=-90, le=150, description="Match clock minute", json_schema_extra={"example": 58})
+    entry_rate_per_min: float = Field(..., ge=0.0, le=2000.0, description="Gate entries per minute", json_schema_extra={"example": 420.0})
+    exit_rate_per_min: float = Field(..., ge=0.0, le=2000.0, description="Gate exits per minute", json_schema_extra={"example": 115.0})
+    temperature: float = Field(..., ge=-20.0, le=55.0, description="Air temperature in degrees Celsius", json_schema_extra={"example": 31.0})
+    humidity: float = Field(..., ge=0.0, le=100.0, description="Humidity percentage", json_schema_extra={"example": 63.0})
+    rain_probability: float = Field(..., ge=0.0, le=100.0, description="Rain probability percentage", json_schema_extra={"example": 10.0})
+    parking_occupancy: float = Field(..., ge=0.0, le=100.0, description="Parking occupancy rate percentage", json_schema_extra={"example": 74.0})
+    metro_arrivals: int = Field(..., ge=0, le=10000, description="Metro arrival rate in passengers/min", json_schema_extra={"example": 890})
+    bus_arrivals: int = Field(..., ge=0, le=10000, description="Bus arrival rate in passengers/min", json_schema_extra={"example": 410})
+    ticket_scan_rate: float = Field(..., ge=0.0, le=2000.0, description="Ticket validation scans per minute", json_schema_extra={"example": 370.0})
+    security_queue_length: float = Field(..., ge=0.0, le=5000.0, description="Security queues count across checkpoints", json_schema_extra={"example": 185.0})
+    food_court_density: float = Field(..., ge=0.0, le=100.0, description="Food concourse queue occupancy percentage", json_schema_extra={"example": 67.0})
+    restroom_density: float = Field(..., ge=0.0, le=100.0, description="Restroom corridors occupancy percentage", json_schema_extra={"example": 49.0})
+    medical_incidents: int = Field(..., ge=0, le=100, description="Active dispatcher medical events", json_schema_extra={"example": 2})
+    previous_congestion: float = Field(..., ge=0.0, le=100.0, description="Past window congestion score", json_schema_extra={"example": 71.0})
+    gate_open_count: int = Field(..., ge=1, le=100, description="Count of open entry gates", json_schema_extra={"example": 14})
+    vip_event: bool = Field(..., description="VIP attendance security active flag", json_schema_extra={"example": False})
+    special_event: bool = Field(..., description="Special high-interest match flag", json_schema_extra={"example": True})
+    holiday: bool = Field(..., description="Holiday matchday schedule indicator", json_schema_extra={"example": False})
+    weekday: str = Field(..., description="Name of the day of the week", json_schema_extra={"example": "Sunday"})
 
     @field_validator('weekday')
     @classmethod
@@ -50,12 +50,12 @@ class FactorImpact(BaseModel):
     impact: float = Field(..., description="Relative local percentage contribution")
 
 class PredictionOutput(BaseModel):
-    risk_level: str = Field(..., description="Predicted risk band: LOW, MEDIUM, HIGH, CRITICAL", example="HIGH")
-    congestion_score: float = Field(..., description="Predicted continuous congestion level", example=91.4)
-    queue_prediction: int = Field(..., description="Predicted average security wait time in minutes", example=18)
-    confidence: float = Field(..., description="Prediction confidence score probability", example=0.95)
+    risk_level: str = Field(..., description="Predicted risk band: LOW, MEDIUM, HIGH, CRITICAL", json_schema_extra={"example": "HIGH"})
+    congestion_score: float = Field(..., description="Predicted continuous congestion level", json_schema_extra={"example": 91.4})
+    queue_prediction: int = Field(..., description="Predicted average security wait time in minutes", json_schema_extra={"example": 18})
+    confidence: float = Field(..., description="Prediction confidence score probability", json_schema_extra={"example": 0.95})
     top_factors: List[FactorImpact] = Field(..., description="Features that contributed most to the prediction")
-    timestamp: str = Field(..., description="Timestamp of inference execution", example="2026-07-09T01:32:00Z")
+    timestamp: str = Field(..., description="Timestamp of inference execution", json_schema_extra={"example": "2026-07-09T01:32:00Z"})
 
 # ──────────────────────────────────────────────
 # API Route Endpoint

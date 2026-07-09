@@ -9,7 +9,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from typing import AsyncIterator, Optional
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 logger = logging.getLogger("copilot")
 

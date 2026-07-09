@@ -1,5 +1,5 @@
 import logging
-from sqlalchemy.orm import Session
+
 from app.db.session import SessionLocal
 from app.models.auth import User, Role
 from app.models.crowd import Stadium, Zone, OccupancyThreshold, CrowdSnapshot

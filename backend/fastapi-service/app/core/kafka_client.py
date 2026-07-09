@@ -1,5 +1,5 @@
 import json
-from typing import Any, Optional
+from typing import Optional
 from confluent_kafka import Producer, Consumer
 from app.core.config import settings
 import logging

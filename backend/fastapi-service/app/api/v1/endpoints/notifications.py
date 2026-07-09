@@ -7,10 +7,11 @@ from app.schemas.notification import (
     NotificationResponse,
     NotificationBroadcast,
     NotificationPreferenceUpdate,
-    NotificationPreferenceResponse
+    NotificationPreferenceResponse,
+    BroadcastResponse
 )
 from app.services.notification import NotificationService
-from typing import List, Optional
+from typing import List
 
 router = APIRouter()
 
@@ -23,6 +24,11 @@ async def create_notification(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Create and dispatch a notification log.
+    
+    Publishes personal notifications to the subscriber's account. Admins/Operations managers can target any user.
+    """
     # Users can only dispatch notifications to themselves, except admins/ops managers
     if notify_in.user_id and notify_in.user_id != current_user.id:
         user_roles = [r.name for r in current_user.roles]
@@ -42,6 +48,11 @@ def list_my_notifications(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    List own active notification history.
+    
+    Lists the past notifications pushed to the caller profile session.
+    """
     service = NotificationService(db)
     notifications, _ = service.get_user_history(current_user.id, skip, limit)
     return notifications
@@ -53,6 +64,11 @@ def get_notifications_history(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Get user notification history.
+    
+    Yields paginated history details of notifications dispatched to the user.
+    """
     service = NotificationService(db)
     notifications, _ = service.get_user_history(current_user.id, skip, limit)
     return notifications
@@ -63,6 +79,11 @@ def get_notification_by_id(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Get notification by log ID.
+    
+    Retrieves detailed values of the specified notification.
+    """
     service = NotificationService(db)
     notification = service.repo.get_notification(id)
     if not notification:
@@ -79,6 +100,11 @@ def mark_notification_read(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Mark notification as read.
+    
+    Sets the read status flag for the target notification log.
+    """
     service = NotificationService(db)
     notification = service.repo.get_notification(id)
     if not notification:
@@ -97,6 +123,11 @@ def delete_notification(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Delete notification log record.
+    
+    Permanently purges a specific notification log item.
+    """
     service = NotificationService(db)
     notification = service.repo.get_notification(id)
     if not notification:
@@ -108,12 +139,17 @@ def delete_notification(
     service.repo.delete_notification(notification)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.post("/broadcast", status_code=status.HTTP_200_OK)
+@router.post("/broadcast", response_model=BroadcastResponse, status_code=status.HTTP_200_OK)
 async def broadcast_notification(
     broadcast: NotificationBroadcast,
     current_user: User = Depends(ops_or_admin),
     db: Session = Depends(get_db)
 ):
+    """
+    Broadcast notification to roles.
+    
+    Pushes emergency alerts or general broadcast messages to all users belonging to target authorization roles.
+    """
     service = NotificationService(db)
     sent_count = await service.dispatch_role_broadcast(broadcast)
     return {"message": "Role broadcast completed", "dispatched_records_count": sent_count}
@@ -123,6 +159,11 @@ def get_my_preferences(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Get user notification channel preferences.
+    
+    Lists disabled/enabled flags for In-App, Email, SMS, or Push notifications.
+    """
     service = NotificationService(db)
     return service.get_preferences(current_user.id)
 
@@ -132,5 +173,10 @@ def update_my_preferences(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    """
+    Update own notification channels.
+    
+    Modifies custom preferences mapping for notification dispatch settings.
+    """
     service = NotificationService(db)
     return service.update_preferences(current_user.id, req)
