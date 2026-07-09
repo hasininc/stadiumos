@@ -5,15 +5,15 @@ services:
     container_name: stadiumos-postgres
     environment:
       POSTGRES_DB: stadiumos_db
-      POSTGRES_USER: hasininc
-      POSTGRES_PASSWORD: Hasini2007
+      POSTGRES_USER: stadiumos_db_user
+      POSTGRES_PASSWORD: mJSRSLdxRaqonk6B9gjl6iiO0wOyMVuS
       
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hasininc -d stadiumos_db"]
+      test: ["CMD-SHELL", "pg_isready -U stadiumos_db_user -d stadiumos_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -80,11 +80,11 @@ services:
       - "8000:8080"
     environment:
       - ENVIRONMENT=development
-      - STADIUMOS_PG_HOST=postgres
+      - STADIUMOS_PG_HOST=dpg-d98051aabeoc739bhlog-a
       - STADIUMOS_PG_PORT=5432
       - STADIUMOS_PG_DB=stadiumos_db
-      - STADIUMOS_PG_USER=hasininc
-      - STADIUMOS_PG_PASS=Hasini2007
+      - STADIUMOS_PG_USER=stadiumos_db_user
+      - STADIUMOS_PG_PASS=mJSRSLdxRaqonk6B9gjl6iiO0wOyMVuS
       - STADIUMOS_REDIS_HOST=redis
       - STADIUMOS_REDIS_PORT=6379
       - STADIUMOS_KAFKA_BROKERS=kafka:29092
