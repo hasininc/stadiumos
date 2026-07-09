@@ -24,8 +24,8 @@ def validate_environment():
             sys.exit(1)
             
     # 2. Validate Copilot Requirements
-    llm_provider = os.getenv("LLM_PROVIDER", "google").lower()
-    if llm_provider == "google":
+    llm_provider = (os.getenv("COPILOT_LLM_PROVIDER") or os.getenv("LLM_PROVIDER") or "gemini").lower()
+    if llm_provider == "google" or llm_provider == "gemini":
         if not os.getenv("GEMINI_API_KEY"):
             logger.warning("WARNING: GEMINI_API_KEY is not set. The AI Copilot will fail to answer queries.")
     elif llm_provider == "openai":

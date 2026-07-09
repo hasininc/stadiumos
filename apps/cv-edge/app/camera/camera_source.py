@@ -45,19 +45,26 @@ class ThreadedCameraSource:
             return self
 
         logger.info(f"Opening video feed from source: {self.source} ...")
-        self.cap = cv2.VideoCapture(self.source)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
-
-        self.ret, self.frame = self.cap.read()
-        if not self.ret:
-            logger.warning(
-                "Physical camera unavailable — switching to SYNTHETIC demo feed."
-            )
-            self.cap.release()
+        
+        if str(self.source).lower() == "synthetic":
+            logger.info("Directly initializing SYNTHETIC demo feed.")
             self.cap = SyntheticCrowdGenerator(self.width, self.height, num_people=25)
             self.using_synthetic = True
             self.ret, self.frame = self.cap.read()
+        else:
+            self.cap = cv2.VideoCapture(self.source)
+            self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
+            self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self.height)
+
+            self.ret, self.frame = self.cap.read()
+            if not self.ret:
+                logger.warning(
+                    "Physical camera unavailable — switching to SYNTHETIC demo feed."
+                )
+                self.cap.release()
+                self.cap = SyntheticCrowdGenerator(self.width, self.height, num_people=25)
+                self.using_synthetic = True
+                self.ret, self.frame = self.cap.read()
 
         mode = "SYNTHETIC" if self.using_synthetic else "LIVE"
         logger.info(f"Camera source initialised in {mode} mode.")

@@ -88,6 +88,11 @@ services:
       - STADIUMOS_REDIS_PORT=6379
       - STADIUMOS_KAFKA_BROKERS=kafka:29092
       - LLM_PROVIDER=google
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health/readiness')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     env_file:
       - path: .env
         required: false
@@ -99,9 +104,15 @@ services:
       dockerfile: apps/ops-dashboard/Dockerfile
     container_name: stadiumos-dashboard
     depends_on:
-      - fastapi-service
+      fastapi-service:
+        condition: service_healthy
     ports:
       - "3000:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # CV Edge Node
   cv-edge:
@@ -110,10 +121,17 @@ services:
       dockerfile: apps/cv-edge/Dockerfile
     container_name: stadiumos-cvedge
     depends_on:
-      - fastapi-service
+      fastapi-service:
+        condition: service_healthy
     environment:
+      - EDGE_CAMERA_SOURCE=synthetic
       - EDGE_BACKEND_API_URL=http://fastapi-service:8080
       - EDGE_BACKEND_WS_URL=ws://fastapi-service:8080/ws/live
+    healthcheck:
+      test: ["CMD-SHELL", "test -f output/latest_frame.jpg || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   pgdata:

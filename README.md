@@ -62,10 +62,31 @@ stadiumos-monorepo/
 To run the full stack (Database, Cache, Event Bus, Backend, Edge CV, Frontend) instantly:
 
 ```bash
-docker-compose up --build -d
+# Ensure .env is set up from .env.template first!
+docker-compose build
+docker-compose up -d
 ```
 
-Once running, navigate to the Operations Dashboard at `http://localhost:3000` and click the **"Start Match Simulation"** button to see the platform spring to life.
+### Services and Ports Map
+| Service | Port | Description |
+|---------|------|-------------|
+| **Frontend (Ops Dashboard)** | `:3000` | Main Web UI (React/Vite). Access via `http://localhost:3000` |
+| **Backend (FastAPI)** | `:8000` | Core API & WebSockets. Access via `http://localhost:8000` |
+| **PostgreSQL** | `:5432` | Relational Database |
+| **Redis** | `:6379` | Ephemeral Cache & State Store |
+| **Kafka Broker** | `:9092` | Event Streaming Platform |
+| **Zookeeper** | `:2181` | Kafka Coordinator |
+| **CV Edge** | None | Runs in background processing camera streams |
+
+### Environment Variables & Integrations
+StadiumOS relies on `.env` configuration. Crucial integrations:
+- `STADIUMOS_PG_*` / `STADIUMOS_REDIS_*` / `STADIUMOS_KAFKA_*`: Core infrastructure connections.
+- `LLM_PROVIDER` (or `COPILOT_LLM_PROVIDER`): Set to `gemini`, `openai`, etc., along with corresponding API Keys (`GEMINI_API_KEY`, etc.) for AI Copilot functionality.
+- `EDGE_CAMERA_SOURCE`: Set to `synthetic` for local/CI simulation or `0` for a physical webcam.
+
+### Cloud Deployment (GKE)
+For Kubernetes deployment, manifests are provided in `deployment/kubernetes/gke-deployment.yaml`.
+Ensure `stadiumos-db-secrets` and `stadiumos-config` ConfigMaps/Secrets are provisioned in your cluster before applying.
 
 For more details, see [DEMO.md](DEMO.md).
 

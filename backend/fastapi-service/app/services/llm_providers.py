@@ -314,7 +314,9 @@ def create_llm_provider() -> LLMProvider:
         OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY
         OLLAMA_BASE_URL
     """
-    provider = os.getenv("COPILOT_LLM_PROVIDER", "gemini").lower()
+    provider = (os.getenv("COPILOT_LLM_PROVIDER") or os.getenv("LLM_PROVIDER") or "gemini").lower()
+    if provider == "google":
+        provider = "gemini"
     model_override = os.getenv("COPILOT_LLM_MODEL", "")
 
     if provider == "openai":
