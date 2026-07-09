@@ -29,11 +29,6 @@ class StadiumSnapshot:
     ml_predicted_queue_time: float = 0.0
     ml_confidence: float = 0.0
 
-    # CV Edge (YOLO)
-    yolo_people_count: int = 0
-    yolo_entry_rate: int = 0
-    yolo_exit_rate: int = 0
-
     # Gates
     gates: list[dict] = field(default_factory=list)
     gates_open: int = 0
@@ -78,11 +73,7 @@ class StadiumSnapshot:
             f"  Risk Level: {self.ml_risk_level}",
             f"  Predicted Queue Time: {self.ml_predicted_queue_time:.0f}s",
             f"  Model Confidence: {self.ml_confidence:.0%}",
-            "",
-            "── COMPUTER VISION (YOLO) ──",
-            f"  People Count: {self.yolo_people_count}",
-            f"  Entry Rate: {self.yolo_entry_rate}/min",
-            f"  Exit Rate: {self.yolo_exit_rate}/min",
+
             "",
             "── GATES ──",
             f"  Open: {self.gates_open} / {self.gates_total}",
@@ -158,9 +149,6 @@ class StadiumContextCollector:
 
         if event_type == "CrowdDensityUpdated":
             s.crowd_density_pct = data.get("crowd_density", s.crowd_density_pct)
-            s.yolo_people_count = data.get("people_count", s.yolo_people_count)
-            s.yolo_entry_rate = data.get("entry_rate", s.yolo_entry_rate)
-            s.yolo_exit_rate = data.get("exit_rate", s.yolo_exit_rate)
 
         elif event_type == "PredictionUpdated":
             s.ml_congestion_score = data.get("congestion_score", s.ml_congestion_score)

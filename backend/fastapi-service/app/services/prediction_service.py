@@ -209,10 +209,12 @@ class PredictionService:
         # Top contributing factors (global feature importances)
         if hasattr(self._model, "feature_importances_"):
             importances = self._model.feature_importances_
+            total_imp = sum(importances) if sum(importances) > 0 else 1.0
+            normalized_importances = [imp / total_imp for imp in importances]
             feature_names = _EXPECTED_COLS
-            paired = sorted(zip(feature_names, importances), key=lambda x: x[1], reverse=True)[:3]
+            paired = sorted(zip(feature_names, normalized_importances), key=lambda x: x[1], reverse=True)[:3]
             top_factors = [
-                {"feature": name.replace("_", " "), "impact": round(float(imp) * 100, 1)}
+                {"feature": name.replace("_", " "), "impact": round(float(imp) * 100.0, 1)}
                 for name, imp in paired
             ]
         else:
