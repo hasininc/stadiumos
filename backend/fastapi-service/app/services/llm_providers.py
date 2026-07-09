@@ -307,44 +307,40 @@ class OllamaProvider(LLMProvider):
 def create_llm_provider() -> LLMProvider:
     """
     Factory function — reads environment variables and returns the configured provider.
-
-    Env vars:
-        COPILOT_LLM_PROVIDER: openai | gemini | anthropic | groq | openrouter | ollama
-        COPILOT_LLM_MODEL: model name override
-        OPENAI_API_KEY, GEMINI_API_KEY, ANTHROPIC_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY
-        OLLAMA_BASE_URL
     """
-    provider = (os.getenv("COPILOT_LLM_PROVIDER") or os.getenv("LLM_PROVIDER") or "gemini").lower()
+    from app.core.config import settings
+
+    provider = (settings.COPILOT_LLM_PROVIDER or settings.LLM_PROVIDER or "gemini").lower()
     if provider == "google":
         provider = "gemini"
-    model_override = os.getenv("COPILOT_LLM_MODEL", "")
+    model_override = settings.COPILOT_LLM_MODEL
 
     if provider == "openai":
         return OpenAICompatibleProvider(
-            api_key=os.getenv("OPENAI_API_KEY", ""),
+            api_key=settings.OPENAI_API_KEY,
             model=model_override or "gpt-4o",
             provider_name="openai",
         )
     elif provider == "gemini":
         return GeminiProvider(
-            api_key=os.getenv("GEMINI_API_KEY", ""),
+            api_key=settings.GEMINI_API_KEY,
             model=model_override or "gemini-2.5-flash",
         )
     elif provider == "anthropic":
         return AnthropicProvider(
-            api_key=os.getenv("ANTHROPIC_API_KEY", ""),
+            api_key=settings.ANTHROPIC_API_KEY,
             model=model_override or "claude-sonnet-4-20250514",
         )
     elif provider == "groq":
         return OpenAICompatibleProvider(
-            api_key=os.getenv("GROQ_API_KEY", ""),
+            api_key=settings.GROQ_API_KEY,
             model=model_override or "llama-3.3-70b-versatile",
             base_url="https://api.groq.com/openai/v1",
             provider_name="groq",
         )
     elif provider == "openrouter":
         return OpenAICompatibleProvider(
-            api_key=os.getenv("OPENROUTER_API_KEY", ""),
+            api_key=settings.OPENROUTER_API_KEY,
             model=model_override or "google/gemini-2.5-flash",
             base_url="https://openrouter.ai/api/v1",
             provider_name="openrouter",
@@ -352,7 +348,7 @@ def create_llm_provider() -> LLMProvider:
     elif provider == "ollama":
         return OllamaProvider(
             model=model_override or "llama3.1",
-            base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+            base_url=settings.OLLAMA_BASE_URL,
         )
     else:
         raise ValueError(f"Unknown LLM provider: {provider}. Supported: openai, gemini, anthropic, groq, openrouter, ollama")

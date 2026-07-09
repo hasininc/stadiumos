@@ -4,16 +4,16 @@ services:
     image: postgres:15-alpine
     container_name: stadiumos-postgres
     environment:
-      POSTGRES_DB: stadiumos_db
-      POSTGRES_USER: stadiumos_db_user
-      POSTGRES_PASSWORD: mJSRSLdxRaqonk6B9gjl6iiO0wOyMVuS
+      POSTGRES_DB: ${STADIUMOS_PG_DB}
+      POSTGRES_USER: ${STADIUMOS_PG_USER}
+      POSTGRES_PASSWORD: ${STADIUMOS_PG_PASS}
       
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U stadiumos_db_user -d stadiumos_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${STADIUMOS_PG_USER} -d ${STADIUMOS_PG_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -79,15 +79,22 @@ services:
     ports:
       - "8000:8080"
     environment:
-      - ENVIRONMENT=development
-      - STADIUMOS_PG_HOST=dpg-d98051aabeoc739bhlog-a
-      - STADIUMOS_PG_PORT=5432
-      - STADIUMOS_PG_DB=stadiumos_db
-      - STADIUMOS_PG_USER=stadiumos_db_user
-      - STADIUMOS_PG_PASS=mJSRSLdxRaqonk6B9gjl6iiO0wOyMVuS
-      - STADIUMOS_REDIS_HOST=redis
-      - STADIUMOS_REDIS_PORT=6379
-      - STADIUMOS_KAFKA_BROKERS=kafka:29092
+      - STADIUMOS_ENV=${STADIUMOS_ENV}
+      - STADIUMOS_GATEWAY_PORT=${STADIUMOS_GATEWAY_PORT}
+      - STADIUMOS_GATEWAY_JWT_SECRET=${STADIUMOS_GATEWAY_JWT_SECRET}
+      - STADIUMOS_PG_HOST=${STADIUMOS_PG_HOST}
+      - STADIUMOS_PG_PORT=${STADIUMOS_PG_PORT}
+      - STADIUMOS_PG_DB=${STADIUMOS_PG_DB}
+      - STADIUMOS_PG_USER=${STADIUMOS_PG_USER}
+      - STADIUMOS_PG_PASS=${STADIUMOS_PG_PASS}
+      - STADIUMOS_REDIS_HOST=${STADIUMOS_REDIS_HOST}
+      - STADIUMOS_REDIS_PORT=${STADIUMOS_REDIS_PORT}
+      - STADIUMOS_KAFKA_BROKERS=${STADIUMOS_KAFKA_BROKERS}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - STADIUMOS_API_HOST=${STADIUMOS_API_HOST}
+      - STADIUMOS_MODEL_PATH=${STADIUMOS_MODEL_PATH}
+      - STADIUMOS_DEMO_OPERATOR_EMAIL=${STADIUMOS_DEMO_OPERATOR_EMAIL}
+      - STADIUMOS_DEMO_OPERATOR_PASSWORD=${STADIUMOS_DEMO_OPERATOR_PASSWORD}
       - LLM_PROVIDER=google
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health/readiness')"]

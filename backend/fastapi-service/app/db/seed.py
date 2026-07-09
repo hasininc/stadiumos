@@ -1,4 +1,5 @@
 import logging
+import os
 
 from app.db.session import SessionLocal
 from app.models.auth import User, Role
@@ -20,8 +21,8 @@ DEFAULT_ROLES = [
 ]
 
 DEMO_OPERATOR = {
-    "email": "operator@stadiumos.dev",
-    "password": "operator123",
+    "email": os.getenv("STADIUMOS_DEMO_OPERATOR_EMAIL", "operator@stadiumos.dev"),
+    "password": os.getenv("STADIUMOS_DEMO_OPERATOR_PASSWORD", ""),
     "role": "Operations Manager",
 }
 
@@ -46,7 +47,7 @@ def seed_database() -> None:
 
         demo_role = db.query(Role).filter(Role.name == DEMO_OPERATOR["role"]).first()
         demo_user = db.query(User).filter(User.email == DEMO_OPERATOR["email"]).first()
-        if demo_role and not demo_user:
+        if demo_role and not demo_user and DEMO_OPERATOR["password"]:
             demo_user = User(
                 email=DEMO_OPERATOR["email"],
                 password_hash=get_password_hash(DEMO_OPERATOR["password"]),
