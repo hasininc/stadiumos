@@ -56,56 +56,48 @@ export const Topbar: React.FC = () => {
         </div>
       </div>
 
-      <div className="hidden xl:flex items-center space-x-4 bg-white/[0.02] border border-white/5 px-5 py-2 rounded-full backdrop-blur-md text-[9px] font-bold font-mono">
-        <div className="flex items-center space-x-1.5">
+      <div className="hidden lg:flex flex-wrap justify-center items-center gap-2 max-w-2xl text-[9px] font-bold font-mono mx-4">
+        <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
           <span className="text-gray-400">BACKEND:</span>
           <span className="text-white">CONNECTED</span>
         </div>
-        <span className="w-px h-3 bg-white/10" />
-        <div className="flex items-center space-x-1.5">
+        <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
           <span className="text-gray-400">PREDICTIONS:</span>
           <span className="text-white">CONNECTED</span>
         </div>
-        <span className="w-px h-3 bg-white/10" />
-        <div className="flex items-center space-x-1.5">
+        <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
           <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" />
           <span className="text-gray-400">COPILOT:</span>
           <span className="text-white">READY</span>
         </div>
-        <span className="w-px h-3 bg-white/10" />
-        <div className="flex items-center space-x-1.5">
+        <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
           <span className={`w-1.5 h-1.5 rounded-full ${simulationStatus === 'running' ? 'bg-[#22C55E] animate-pulse' : 'bg-amber-500'}`} />
           <span className="text-gray-400">SIMULATION:</span>
           <span className="text-white uppercase">{simulationStatus}</span>
         </div>
-        <span className="w-px h-3 bg-white/10" />
-        <div className="flex items-center space-x-1.5">
+        <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
           <span className={`w-1.5 h-1.5 rounded-full ${wsConnected ? 'bg-[#22C55E]' : 'bg-red-500'}`} />
           <span className="text-gray-400">WS:</span>
           <span className="text-white uppercase">{wsConnected ? 'CONNECTED' : 'DISCONNECTED'}</span>
         </div>
         {wsConnected && (
           <>
-            <span className="w-px h-3 bg-white/10" />
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
               <span className={`w-1.5 h-1.5 rounded-full ${wsLatency < 50 ? 'bg-[#22C55E]' : wsLatency < 150 ? 'bg-amber-500' : 'bg-red-400'}`} />
               <span className="text-gray-400">HEALTH:</span>
               <span className="text-white uppercase">{wsLatency < 50 ? 'EXCELLENT' : wsLatency < 150 ? 'GOOD' : 'POOR'}</span>
             </div>
-            <span className="w-px h-3 bg-white/10" />
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
               <span className="text-gray-400">LATENCY:</span>
               <span className="font-mono text-white">{wsLatency}ms</span>
             </div>
-            <span className="w-px h-3 bg-white/10" />
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
               <span className="text-gray-400">RATE:</span>
               <span className="font-mono text-white">{wsMsgRate} msg/s</span>
             </div>
-            <span className="w-px h-3 bg-white/10" />
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 bg-white/[0.04] border border-white/5 px-2.5 py-1.5 rounded-lg">
               <span className="text-gray-400">LAST:</span>
               <span className="text-[#F7B9C4] max-w-[80px] truncate" title={wsLastEvent}>{wsLastEvent}</span>
             </div>
