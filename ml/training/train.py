@@ -10,8 +10,10 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.ensemble import RandomForestRegressor
+
 # pyrefly: ignore [missing-import]
 from xgboost import XGBRegressor
+
 # pyrefly: ignore [missing-import]
 from catboost import CatBoostRegressor
 

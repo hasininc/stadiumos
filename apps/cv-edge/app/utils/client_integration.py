@@ -13,7 +13,7 @@ import json
 import threading
 from typing import Dict, Any, Optional
 
-# pyrefly: ignore [missing-import]
+
 import websocket
 
 logger = logging.getLogger("cv-edge")

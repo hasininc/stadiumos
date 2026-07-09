@@ -1,6 +1,6 @@
 import os
 from typing import Union
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -13,11 +13,11 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
     
     # Database Configurations
-    PG_HOST: str = os.getenv("STADIUMOS_PG_HOST", "localhost")
-    PG_PORT: str = os.getenv("STADIUMOS_PG_PORT", "5432")
-    PG_DB: str = os.getenv("STADIUMOS_PG_DB", "stadiumos_db")
-    PG_USER: str = os.getenv("STADIUMOS_PG_USER", "stadiumos_app_user")
-    PG_PASS: str = os.getenv("STADIUMOS_PG_PASS", "local_dev_password_change_me")
+    PG_HOST: str = Field(default="localhost", validation_alias="STADIUMOS_PG_HOST")
+    PG_PORT: str = Field(default="5432", validation_alias="STADIUMOS_PG_PORT")
+    PG_DB: str = Field(default="stadiumos_db", validation_alias="STADIUMOS_PG_DB")
+    PG_USER: str = Field(default="stadiumos_app_user", validation_alias="STADIUMOS_PG_USER")
+    PG_PASS: str = Field(default="local_dev_password_change_me", validation_alias="STADIUMOS_PG_PASS")
     
     @property
     def DATABASE_URL(self) -> str:
@@ -49,6 +49,10 @@ class Settings(BaseSettings):
             return v
         raise ValueError(v)
 
-    model_config = SettingsConfigDict(case_sensitive=True)
-
+    model_config = SettingsConfigDict(
+    env_file=".env",
+    env_file_encoding="utf-8",
+    case_sensitive=True,
+    extra="ignore",
+)
 settings = Settings()
