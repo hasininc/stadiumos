@@ -133,14 +133,6 @@ class BackendIntegrationClient:
 
         websocket.enableTrace(False)
 
-        self.ws = websocket.WebSocketApp(
-            self.ws_url,
-            on_open=self._on_ws_open,
-            on_message=self._on_ws_message,
-            on_error=self._on_ws_error,
-            on_close=self._on_ws_close,
-        )
-
         self.ws_thread = threading.Thread(
             target=self._ws_run_loop, daemon=True
         )
@@ -149,6 +141,13 @@ class BackendIntegrationClient:
     def _ws_run_loop(self):
         """Run the WS with built-in reconnect."""
         while not self._ws_stop:
+            self.ws = websocket.WebSocketApp(
+                self.ws_url,
+                on_open=self._on_ws_open,
+                on_message=self._on_ws_message,
+                on_error=self._on_ws_error,
+                on_close=self._on_ws_close,
+            )
             try:
                 logger.info(f"Connecting to WebSocket at {self.ws_url} …")
                 self.ws.run_forever(ping_interval=10, ping_timeout=5)
