@@ -43,6 +43,12 @@ Pipfile.lock
 *.key
 *.cert
 *.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+!nx.json
+!vercel.json
 !google-services.json
 !GoogleService-Info.plist
 
