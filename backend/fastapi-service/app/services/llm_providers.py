@@ -76,7 +76,14 @@ class OpenAICompatibleProvider(LLMProvider):
             "max_tokens": max_tokens,
         }
         if response_format:
-            kwargs["response_format"] = response_format
+            from pydantic import BaseModel
+            if isinstance(response_format, type) and issubclass(response_format, BaseModel):
+                if self.provider_name == "openai":
+                    kwargs["response_format"] = response_format
+                else:
+                    kwargs["response_format"] = {"type": "json_object"}
+            else:
+                kwargs["response_format"] = response_format
 
         resp = await self.client.chat.completions.create(**kwargs)
         latency = (time.time() - t0) * 1000
@@ -115,6 +122,7 @@ class GeminiProvider(LLMProvider):
     def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
         self.model = model
         self.api_key = api_key
+        self.provider_name = "gemini"
         try:
             from google import genai
             self.client = genai.Client(api_key=api_key)
@@ -140,6 +148,9 @@ class GeminiProvider(LLMProvider):
             max_output_tokens=max_tokens,
             system_instruction=system_instruction,
         )
+        if response_format:
+            config.response_mime_type = "application/json"
+            config.response_schema = response_format
 
         resp = self.client.models.generate_content(
             model=self.model,
@@ -189,6 +200,7 @@ class GeminiProvider(LLMProvider):
 class AnthropicProvider(LLMProvider):
     def __init__(self, api_key: str, model: str = "claude-sonnet-4-20250514"):
         self.model = model
+        self.provider_name = "anthropic"
         try:
             from anthropic import AsyncAnthropic
             self.client = AsyncAnthropic(api_key=api_key)
@@ -252,6 +264,7 @@ class OllamaProvider(LLMProvider):
     def __init__(self, model: str = "llama3.1", base_url: str = "http://localhost:11434"):
         self.model = model
         self.base_url = base_url.rstrip("/")
+        self.provider_name = "ollama"
 
     async def generate(self, messages, temperature=0.3, max_tokens=2048, response_format=None) -> LLMResponse:
         import aiohttp
