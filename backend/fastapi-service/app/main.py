@@ -35,11 +35,10 @@ app = FastAPI(
 
 # CORS Policy Mapping
 cors_origins = [str(origin) for origin in settings.BACKEND_CORS_ORIGINS]
-cors_origin_regex = r"https?://.*\.vercel\.app"
+cors_origin_regex = r"https?://.*"
 
 if "*" in cors_origins:
     cors_origins = []
-    cors_origin_regex = r"https?://.*"
 
 app.add_middleware(
     CORSMiddleware,
