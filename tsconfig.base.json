@@ -10,9 +10,8 @@
     "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@stadiumos/shared/*": ["libs/shared/*"],
-      "@stadiumos/schemas/*": ["libs/schemas/*"],
-      "@stadiumos/components/*": ["libs/components/*"]
+      "@stadiumos/shared/*": ["shared/*"],
+      "@stadiumos/schemas/*": ["libs/schemas/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

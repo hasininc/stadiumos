@@ -20,9 +20,8 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     resolve: {
       alias: {
-        '@stadiumos/shared': path.resolve(__dirname, '../../libs/shared'),
+        '@stadiumos/shared': path.resolve(__dirname, '../../shared'),
         '@stadiumos/schemas': path.resolve(__dirname, '../../libs/schemas'),
-        '@stadiumos/components': path.resolve(__dirname, '../../libs/components'),
         '@/': path.resolve(__dirname, './src/'),
       },
     },

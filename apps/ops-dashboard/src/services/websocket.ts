@@ -212,7 +212,7 @@ class WebSocketClient {
         );
         break;
 
-      case 'GateStatusChanged':
+      case 'GateStatusChanged': {
         const isClosed = event.data.status === 'CLOSED';
         store.addNotification(
           "🚪 Gate Status Changed", 
@@ -223,6 +223,7 @@ class WebSocketClient {
           store.updateWhatIf({ closeGateC: isClosed });
         }
         break;
+      }
 
       case 'EmergencyAlert':
         store.addNotification(
@@ -243,7 +244,7 @@ class WebSocketClient {
         });
         break;
 
-      case 'WeatherUpdated':
+      case 'WeatherUpdated': {
         const isStorm = event.data.condition === 'STORMY' || event.data.condition === 'RAINY';
         store.addNotification(
           "🌧️ Weather Sensor Update", 
@@ -252,6 +253,7 @@ class WebSocketClient {
         );
         store.updateWhatIf({ heavyRain: isStorm });
         break;
+      }
 
       case 'NotificationCreated':
         store.addNotification(
