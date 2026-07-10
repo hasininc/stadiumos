@@ -8,6 +8,7 @@
 **/build
 **/*.db
 **/*.pkl
+!ml/models/*.pkl
 **/*.png
 **/*.jpg
 **/*.jpeg

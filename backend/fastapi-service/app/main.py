@@ -110,6 +110,11 @@ app.include_router(prediction.router, prefix=f"{settings.API_V1_STR}/predict", t
 app.include_router(copilot.router, prefix=f"{settings.API_V1_STR}/copilot", tags=["copilot"])
 app.include_router(health.router, prefix="/health", tags=["health"])
 
+@app.get("/")
+def read_root():
+    return {"status": "ok", "message": "StadiumOS API Gateway"}
+
+
 @app.websocket("/ws/live")
 async def websocket_live_endpoint(websocket: WebSocket):
     await live_ws_manager.connect(websocket)
