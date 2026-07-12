@@ -4,18 +4,7 @@ Welcome to the **StadiumOS Hackathon Demo Guide**. This platform is a fully-func
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
-- Port `8000`, `3000`, `5432`, `6379`, `9092`, and `2181` free on your local machine
-- A `.env` file at the root of the project with necessary API keys (e.g., Google/OpenAI keys for the AI Copilot). 
-
-## 1. Starting the Platform
-
-Run the following command from the root of the repository:
-
-```bash
-docker-compose up --build -d
-```
-
+- Do
 This will spin up the entire orchestration including:
 1. **Postgres** (Database)
 2. **Redis** (Caching / Rate Limiting)
