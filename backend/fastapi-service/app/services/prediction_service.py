@@ -8,30 +8,130 @@ space, runs inference, and returns both new ML fields and legacy
 dashboard fields.
 """
 
-import os
 import logging
 import threading
-from typing import Dict, Any
+from pathlib import Path
+from typing import Any, Iterable, Mapping
 
-import numpy as np
-import pandas as pd
 import joblib
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
 # ──────────────────────────────────────────────
 # Paths to trained model artifacts
 # ──────────────────────────────────────────────
-_ML_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "..", "ml"))
-_MODEL_PATH = os.path.join(_ML_DIR, "models", "crowd_forecast_model.pkl")
-_PREPROCESSOR_PATH = os.path.join(_ML_DIR, "models", "preprocessor.pkl")
+_ML_DIR = Path(__file__).resolve().parents[4] / "ml"
+_MODEL_PATH = _ML_DIR / "models" / "crowd_forecast_model.pkl"
+_PREPROCESSOR_PATH = _ML_DIR / "models" / "preprocessor.pkl"
+_DEFAULT_STADIUM_CAPACITY = 80_000
+_MIN_CONFIDENCE = 0.60
+_MAX_CONFIDENCE = 0.95
+_VOLATILITY_CONFIDENCE_DIVISOR = 1500.0
+_MAX_QUEUE_WAIT_MINUTES = 60
 
 # The feature columns expected by the preprocessor (must match training order)
-_EXPECTED_COLS = [
+_EXPECTED_COLS = (
     "zone_id", "event_phase", "weather", "day_of_week",
     "gate_status", "security_level", "current_occupancy",
     "entry_rate", "exit_rate", "hour",
-]
+)
+
+
+def _event_phase_for_match_minute(match_minute: float) -> str:
+    if match_minute < 0:
+        return "pre-match"
+    if match_minute <= 45:
+        return "first-half"
+    if match_minute <= 60:
+        return "halftime"
+    if match_minute <= 105:
+        return "second-half"
+    return "post-match"
+
+
+def _weather_for_conditions(temperature: float, rain_probability: float) -> str:
+    if rain_probability > 50:
+        return "rain"
+    if temperature > 35:
+        return "hot"
+    if rain_probability > 20:
+        return "cloudy"
+    return "clear"
+
+
+def _gate_status_for_open_count(open_gate_count: int) -> str:
+    if open_gate_count == 0:
+        return "closed"
+    if open_gate_count < 5:
+        return "restricted"
+    return "open"
+
+
+def _security_level_for_queue_length(queue_length: float) -> str:
+    if queue_length > 300:
+        return "high"
+    if queue_length > 100:
+        return "medium"
+    return "low"
+
+
+def _congestion_score(predicted_occupancy: float, capacity: Any) -> float:
+    stadium_capacity = float(capacity or _DEFAULT_STADIUM_CAPACITY)
+    stadium_capacity = max(stadium_capacity, 1.0)
+    score = (max(0.0, predicted_occupancy) / stadium_capacity) * 100.0
+    return round(min(100.0, score), 1)
+
+
+def _risk_level_for_congestion(congestion_score: float) -> str:
+    if congestion_score < 35:
+        return "LOW"
+    if congestion_score < 65:
+        return "MEDIUM"
+    if congestion_score < 85:
+        return "HIGH"
+    return "CRITICAL"
+
+
+def _confidence_for_volatility(entry_rate: float, exit_rate: float) -> float:
+    volatility = entry_rate + exit_rate
+    confidence = 1.0 - (volatility / _VOLATILITY_CONFIDENCE_DIVISOR)
+    bounded_confidence = max(_MIN_CONFIDENCE, min(_MAX_CONFIDENCE, confidence))
+    return round(bounded_confidence, 2)
+
+
+def _queue_prediction_for_congestion(congestion_score: float) -> int:
+    queue_minutes = congestion_score * 0.25
+    return int(min(_MAX_QUEUE_WAIT_MINUTES, max(1, queue_minutes)))
+
+
+def _top_factors_from_importances(
+    importances: Iterable[float] | None,
+) -> list[dict[str, float | str]]:
+    if importances is None:
+        return []
+
+    importances_by_feature = [
+        (feature_name, float(importance))
+        for feature_name, importance in zip(_EXPECTED_COLS, importances)
+    ]
+    total_importance = (
+        sum(importance for _, importance in importances_by_feature) or 1.0
+    )
+
+    ranked_importances = sorted(
+        importances_by_feature,
+        key=lambda item: item[1],
+        reverse=True,
+    )[:3]
+
+    return [
+        {
+            "feature": feature_name.replace("_", " "),
+            "impact": round((importance / total_importance) * 100.0, 1),
+        }
+        for feature_name, importance in ranked_importances
+    ]
 
 
 class PredictionService:
@@ -66,11 +166,17 @@ class PredictionService:
         """Load the trained model and preprocessor from disk."""
         logger.info("Loading ML model artifacts from %s …", _ML_DIR)
 
-        if not os.path.exists(_MODEL_PATH):
-            logger.warning("Model file not found at %s — predictions will be unavailable.", _MODEL_PATH)
+        if not _MODEL_PATH.exists():
+            logger.warning(
+                "Model file not found at %s — predictions will be unavailable.",
+                _MODEL_PATH,
+            )
             return
-        if not os.path.exists(_PREPROCESSOR_PATH):
-            logger.warning("Preprocessor file not found at %s — predictions will be unavailable.", _PREPROCESSOR_PATH)
+        if not _PREPROCESSOR_PATH.exists():
+            logger.warning(
+                "Preprocessor file not found at %s — predictions will be unavailable.",
+                _PREPROCESSOR_PATH,
+            )
             return
 
         try:
@@ -89,7 +195,7 @@ class PredictionService:
     # ── Feature Mapping ───────────────────────────
 
     @staticmethod
-    def _map_dashboard_input_to_ml_features(raw: Dict[str, Any]) -> Dict[str, Any]:
+    def _map_dashboard_input_to_ml_features(raw: Mapping[str, Any]) -> dict[str, Any]:
         """
         Maps the dashboard's PredictionInput schema (22 fields like
         attendance, match_minute, etc.) into the 10 features expected
@@ -98,68 +204,31 @@ class PredictionService:
         This is a deterministic, heuristic mapping — no information is
         lost, but the representation changes to match the training data.
         """
-        # Derive event_phase from match_minute
-        mm = raw.get("match_minute", 0)
-        if mm < 0:
-            event_phase = "pre-match"
-        elif mm <= 45:
-            event_phase = "first-half"
-        elif mm <= 60:
-            event_phase = "halftime"
-        elif mm <= 105:
-            event_phase = "second-half"
-        else:
-            event_phase = "post-match"
-
-        # Derive weather from temperature / rain_probability
-        rain = raw.get("rain_probability", 0)
-        temp = raw.get("temperature", 25)
-        if rain > 50:
-            weather = "rain"
-        elif temp > 35:
-            weather = "hot"
-        elif rain > 20:
-            weather = "cloudy"
-        else:
-            weather = "clear"
-
-        # Derive gate_status from gate_open_count
-        goc = raw.get("gate_open_count", 10)
-        if goc == 0:
-            gate_status = "closed"
-        elif goc < 5:
-            gate_status = "restricted"
-        else:
-            gate_status = "open"
-
-        # Derive security_level from security_queue_length
-        sql = raw.get("security_queue_length", 0)
-        if sql > 300:
-            security_level = "high"
-        elif sql > 100:
-            security_level = "medium"
-        else:
-            security_level = "low"
-
-        # Derive zone_id — default to ZONE_A (the endpoint doesn't carry zone info)
-        zone_id = raw.get("zone_id", "ZONE_A")
-
         return {
-            "zone_id": zone_id,
+            "zone_id": raw.get("zone_id", "ZONE_A"),
             "current_occupancy": int(raw.get("attendance", 0)),
             "entry_rate": int(raw.get("entry_rate_per_min", 0)),
             "exit_rate": int(raw.get("exit_rate_per_min", 0)),
-            "event_phase": event_phase,
-            "weather": weather,
+            "event_phase": _event_phase_for_match_minute(
+                raw.get("match_minute", 0)
+            ),
+            "weather": _weather_for_conditions(
+                raw.get("temperature", 25),
+                raw.get("rain_probability", 0),
+            ),
             "day_of_week": raw.get("weekday", "Monday"),
-            "gate_status": gate_status,
-            "security_level": security_level,
+            "gate_status": _gate_status_for_open_count(
+                raw.get("gate_open_count", 10)
+            ),
+            "security_level": _security_level_for_queue_length(
+                raw.get("security_queue_length", 0)
+            ),
             "hour": 12,  # Not available from the dashboard input; safe default
         }
 
     # ── Inference ─────────────────────────────────
 
-    def predict(self, raw_input: Dict[str, Any]) -> Dict[str, Any]:
+    def predict(self, raw_input: Mapping[str, Any]) -> dict[str, Any]:
         """
         Thread-safe inference.  Accepts a dict matching the dashboard's
         PredictionInput fields and returns a composite result containing
@@ -179,54 +248,29 @@ class PredictionService:
             df = pd.DataFrame([ml_features])
 
             # Ensure column order matches preprocessor expectations
-            X_prep = self._preprocessor.transform(df[_EXPECTED_COLS])
+            X_prep = self._preprocessor.transform(df[list(_EXPECTED_COLS)])
 
             predicted_occupancy = float(self._model.predict(X_prep)[0])
             predicted_occupancy = max(0.0, predicted_occupancy)
 
         # ── Derived metrics for dashboard backward compatibility ────
-        capacity = raw_input.get("stadium_capacity", 80000)
-        congestion_score = min(100.0, (predicted_occupancy / capacity) * 100.0)
-        congestion_score = round(congestion_score, 1)
-
-        # Risk level
-        if congestion_score < 35:
-            risk_level = "LOW"
-        elif congestion_score < 65:
-            risk_level = "MEDIUM"
-        elif congestion_score < 85:
-            risk_level = "HIGH"
-        else:
-            risk_level = "CRITICAL"
-
-        # Confidence heuristic — penalised by high entry+exit volatility
-        volatility = ml_features["entry_rate"] + ml_features["exit_rate"]
-        confidence = round(max(0.60, min(0.95, 1.0 - (volatility / 1500.0))), 2)
-
-        # Queue prediction — rough estimate based on congestion
-        queue_prediction = int(min(60, max(1, congestion_score * 0.25)))
-
-        # Top contributing factors (global feature importances)
-        if hasattr(self._model, "feature_importances_"):
-            importances = self._model.feature_importances_
-            total_imp = sum(importances) if sum(importances) > 0 else 1.0
-            normalized_importances = [imp / total_imp for imp in importances]
-            feature_names = _EXPECTED_COLS
-            paired = sorted(zip(feature_names, normalized_importances), key=lambda x: x[1], reverse=True)[:3]
-            top_factors = [
-                {"feature": name.replace("_", " "), "impact": round(float(imp) * 100.0, 1)}
-                for name, imp in paired
-            ]
-        else:
-            top_factors = []
+        congestion_score = _congestion_score(
+            predicted_occupancy,
+            raw_input.get("stadium_capacity", _DEFAULT_STADIUM_CAPACITY),
+        )
 
         return {
             "predicted_occupancy": int(round(predicted_occupancy)),
             "congestion_score": congestion_score,
-            "queue_prediction": queue_prediction,
-            "risk_level": risk_level,
-            "confidence": confidence,
-            "top_factors": top_factors,
+            "queue_prediction": _queue_prediction_for_congestion(congestion_score),
+            "risk_level": _risk_level_for_congestion(congestion_score),
+            "confidence": _confidence_for_volatility(
+                ml_features["entry_rate"],
+                ml_features["exit_rate"],
+            ),
+            "top_factors": _top_factors_from_importances(
+                getattr(self._model, "feature_importances_", None),
+            ),
         }
 
 
