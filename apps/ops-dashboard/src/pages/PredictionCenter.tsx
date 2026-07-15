@@ -56,7 +56,15 @@ const queueTimeTrendData = [
 
 export const PredictionCenter: React.FC = () => {
   const store = useOpsStore();
-  const { prediction, isLoading, error, history, retry, inputPayload } = useCrowdPrediction();
+  const {
+    prediction,
+    operationsPrediction,
+    isLoading,
+    error,
+    history,
+    retry,
+    inputPayload,
+  } = useCrowdPrediction();
   
   // What-If parameters bound directly to global store
   const sliderAttendance = store.attendance;
@@ -108,6 +116,127 @@ export const PredictionCenter: React.FC = () => {
   const avgQueueTime = prediction ? prediction.queue_prediction : localQueueTime;
   const predictionConfidence = prediction ? Math.round(prediction.confidence * 100) : 95;
   const riskLevel = prediction ? prediction.risk_level : (congestionRisk > 80 ? 'CRITICAL' : congestionRisk > 60 ? 'HIGH' : 'MEDIUM');
+
+  const maxBy = <T,>(items: T[] | undefined, selector: (item: T) => number): T | undefined =>
+    items && items.length > 0
+      ? items.reduce((best, item) => (selector(item) > selector(best) ? item : best))
+      : undefined;
+
+  const topZone = maxBy(operationsPrediction?.crowd_congestion, item => item.congestion_score);
+  const slowestGate = maxBy(operationsPrediction?.queue_times, item => item.estimated_wait_minutes);
+  const peakAttendance = maxBy(operationsPrediction?.attendance_forecast, item => item.predicted_attendance);
+  const highestRiskZone = operationsPrediction?.crowd_risk.find(item => item.risk_level === 'Critical')
+    || operationsPrediction?.crowd_risk.find(item => item.risk_level === 'High')
+    || operationsPrediction?.crowd_risk[0];
+  const highestMedical = maxBy(operationsPrediction?.medical_demand, item => item.expected_cases);
+  const highestVendor = maxBy(operationsPrediction?.vendor_demand, item => item.total_units);
+  const fullestParking = maxBy(operationsPrediction?.parking_occupancy, item => item.predicted_occupancy_pct);
+  const busiestTraffic = maxBy(
+    operationsPrediction?.traffic_flow,
+    item => Math.max(item.incoming_congestion, item.outgoing_congestion)
+  );
+  const primaryRecommendation = operationsPrediction?.recommendations[0];
+
+  const moduleTiles = [
+    {
+      label: 'Crowd Congestion',
+      value: `${topZone?.congestion_score ?? congestionRisk}%`,
+      detail: topZone?.zone_name || 'Local zone projection',
+      confidence: topZone?.confidence ?? predictionConfidence,
+      icon: Users,
+      accent: 'text-[#DE638A]',
+    },
+    {
+      label: 'Queue Times',
+      value: `${slowestGate?.estimated_wait_minutes ?? avgQueueTime} min`,
+      detail: slowestGate?.gate_name || 'Average gate forecast',
+      confidence: slowestGate?.confidence ?? predictionConfidence,
+      icon: Clock,
+      accent: 'text-[#F7B9C4]',
+    },
+    {
+      label: 'Attendance Forecast',
+      value: (peakAttendance?.predicted_attendance ?? sliderAttendance).toLocaleString(),
+      detail: peakAttendance ? `T+${peakAttendance.hour_offset}h forecast` : 'Live attendance',
+      confidence: peakAttendance?.confidence ?? predictionConfidence,
+      icon: TrendingUp,
+      accent: 'text-[#C6BADE]',
+    },
+    {
+      label: 'Crowd Risk',
+      value: highestRiskZone?.risk_level || riskLevel,
+      detail: highestRiskZone?.zone_name || 'Local risk band',
+      confidence: highestRiskZone?.confidence ?? predictionConfidence,
+      icon: AlertTriangle,
+      accent: highestRiskZone?.risk_level === 'Critical' ? 'text-red-400' : 'text-orange-400',
+    },
+    {
+      label: 'Emergency Severity',
+      value: operationsPrediction?.emergency_severity.predicted_severity || (store.incidents.length > 2 ? 'High' : 'Medium'),
+      detail: operationsPrediction?.emergency_severity.incident_type || 'Operational',
+      confidence: operationsPrediction?.emergency_severity.confidence ?? predictionConfidence,
+      icon: Activity,
+      accent: 'text-red-300',
+    },
+    {
+      label: 'Security Resources',
+      value: `${operationsPrediction?.security_recommendation.recommended_total_personnel ?? sliderSecurity}`,
+      detail: `${operationsPrediction?.security_recommendation.delta ?? 0} staff delta`,
+      confidence: operationsPrediction?.security_recommendation.confidence ?? predictionConfidence,
+      icon: Shield,
+      accent: 'text-emerald-300',
+    },
+    {
+      label: 'Medical Demand',
+      value: `${highestMedical?.expected_cases ?? store.incidents.filter(i => i.type.includes('Medical')).length}`,
+      detail: highestMedical?.zone_name || 'Current incident load',
+      confidence: highestMedical?.confidence ?? predictionConfidence,
+      icon: Activity,
+      accent: 'text-rose-300',
+    },
+    {
+      label: 'Vendor Demand',
+      value: `${highestVendor?.total_units ?? Math.round(sliderAttendance * 0.08)}`,
+      detail: highestVendor?.vendor_zone_name || 'Local demand estimate',
+      confidence: highestVendor?.confidence ?? predictionConfidence,
+      icon: Cpu,
+      accent: 'text-amber-300',
+    },
+    {
+      label: 'Parking Occupancy',
+      value: `${fullestParking?.predicted_occupancy_pct ?? inputPayload.parking_occupancy}%`,
+      detail: fullestParking?.parking_name || 'Parking utilization',
+      confidence: fullestParking?.confidence ?? predictionConfidence,
+      icon: Activity,
+      accent: 'text-sky-300',
+    },
+    {
+      label: 'Traffic Flow',
+      value: busiestTraffic
+        ? `${Math.max(busiestTraffic.incoming_congestion, busiestTraffic.outgoing_congestion)}%`
+        : `${Math.round((sliderAttendance / 80000) * 72)}%`,
+      detail: busiestTraffic?.corridor_name || 'Road network pressure',
+      confidence: busiestTraffic?.confidence ?? predictionConfidence,
+      icon: TrendingUp,
+      accent: 'text-blue-300',
+    },
+    {
+      label: 'Weather Impact',
+      value: `${operationsPrediction?.weather_impact.operational_risk_impact_pct ?? (heavyRain ? 22 : 4)}%`,
+      detail: heavyRain ? 'Storm conditions' : 'Normal conditions',
+      confidence: operationsPrediction?.weather_impact.confidence ?? predictionConfidence,
+      icon: heavyRain ? CloudRain : Sun,
+      accent: heavyRain ? 'text-blue-300' : 'text-yellow-300',
+    },
+    {
+      label: 'Recommendation Engine',
+      value: primaryRecommendation?.priority || (congestionRisk > 75 ? 'HIGH' : 'MEDIUM'),
+      detail: primaryRecommendation?.title || 'Local mitigation queue',
+      confidence: primaryRecommendation?.confidence ?? predictionConfidence,
+      icon: CheckCircle,
+      accent: 'text-emerald-300',
+    },
+  ];
 
   // Dynamic explanation compiler based on variables
   const getAIExplanation = () => {
@@ -431,6 +560,42 @@ export const PredictionCenter: React.FC = () => {
                 <span className="text-[8px] text-gray-400 uppercase font-semibold block">Gate Count</span>
                 <span className="font-extrabold text-white font-mono">{inputPayload.gate_open_count} open</span>
               </div>
+            </div>
+          </div>
+
+          {/* SECTION 2B: Full AI operations model bundle */}
+          <div className="glass-panel p-6 rounded-2xl border border-white/5 space-y-4">
+            <div className="flex items-center justify-between border-b border-white/5 pb-3">
+              <div className="flex items-center space-x-2">
+                <Cpu className="w-4 h-4 text-[#C6BADE]" />
+                <span className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider">AI Operations Model Registry</span>
+              </div>
+              <span className="text-[8px] text-[#94A3B8] font-mono uppercase">
+                {operationsPrediction ? operationsPrediction.model_version : 'Local fallback projections'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+              {moduleTiles.map((tile) => {
+                const Icon = tile.icon;
+                return (
+                  <div key={tile.label} className="p-3 bg-[#120A1D]/65 border border-white/5 rounded-xl min-h-[104px] flex flex-col justify-between">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <span className="text-[8px] text-[#94A3B8] font-bold uppercase tracking-wider block">{tile.label}</span>
+                        <span className="text-lg text-white font-extrabold font-mono block mt-1">{tile.value}</span>
+                      </div>
+                      <Icon className={`w-4 h-4 ${tile.accent} shrink-0`} />
+                    </div>
+                    <div className="pt-2 border-t border-white/[0.04] flex items-center justify-between gap-3 text-[9px]">
+                      <span className="text-gray-400 truncate">{tile.detail}</span>
+                      <span className="text-[#C6BADE] font-mono font-bold shrink-0">
+                        {Math.round(tile.confidence)}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

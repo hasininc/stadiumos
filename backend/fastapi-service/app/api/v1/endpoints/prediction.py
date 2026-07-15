@@ -9,15 +9,17 @@ congestion metrics, risk level, confidence, and contributing factors.
 import time
 import logging
 from datetime import datetime, timezone
-from typing import List
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.services.prediction_service import prediction_service
+from ml.stadium_ops import StadiumOperationsInferenceEngine
 
 logger = logging.getLogger("fastapi")
 router = APIRouter()
+stadium_ops_engine = StadiumOperationsInferenceEngine()
 
 
 # ──────────────────────────────────────────────
@@ -137,6 +139,44 @@ class PredictionInput(BaseModel):
         description="Name of the day of the week",
         json_schema_extra={"example": "Sunday"},
     )
+    security_staff: int = Field(
+        300,
+        ge=0,
+        le=1000,
+        description="Security personnel currently deployed",
+        json_schema_extra={"example": 342},
+    )
+    gate_capacity: float = Field(
+        100.0,
+        ge=0.0,
+        le=120.0,
+        description="Overall gate throughput percentage from what-if simulation",
+        json_schema_extra={"example": 92.0},
+    )
+    closed_gates: List[str] = Field(
+        default_factory=list,
+        description="Gate IDs that are offline or closed",
+        json_schema_extra={"example": ["GATE_C"]},
+    )
+    incident_count: int = Field(
+        0,
+        ge=0,
+        le=500,
+        description="Count of active operational incidents",
+        json_schema_extra={"example": 3},
+    )
+    incident_type: str = Field(
+        "Operational",
+        description="Primary incident type when severity prediction is requested",
+        json_schema_extra={"example": "Crowd Congestion"},
+    )
+    forecast_hours: int = Field(
+        6,
+        ge=1,
+        le=12,
+        description="Number of hourly attendance forecast steps to return",
+        json_schema_extra={"example": 6},
+    )
 
     @field_validator("weekday")
     @classmethod
@@ -197,6 +237,30 @@ class PredictionOutput(BaseModel):
     )
 
 
+class OperationsPredictionOutput(BaseModel):
+    """Full AI stadium operations prediction bundle."""
+
+    status: str
+    source: str
+    generated_at: str
+    model_version: str
+    training_rows: int
+    evaluations: Dict[str, Dict[str, Any]]
+    legacy_crowd: PredictionOutput
+    crowd_congestion: List[Dict[str, Any]]
+    queue_times: List[Dict[str, Any]]
+    attendance_forecast: List[Dict[str, Any]]
+    crowd_risk: List[Dict[str, Any]]
+    emergency_severity: Dict[str, Any]
+    security_recommendation: Dict[str, Any]
+    medical_demand: List[Dict[str, Any]]
+    vendor_demand: List[Dict[str, Any]]
+    parking_occupancy: List[Dict[str, Any]]
+    traffic_flow: List[Dict[str, Any]]
+    weather_impact: Dict[str, Any]
+    recommendations: List[Dict[str, Any]]
+
+
 # ──────────────────────────────────────────────
 # API Route
 # ──────────────────────────────────────────────
@@ -250,3 +314,89 @@ async def predict_crowd(payload: PredictionInput):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Prediction pipeline failure: {exc}",
         )
+
+
+def _predict_operations(payload: PredictionInput) -> dict[str, Any]:
+    try:
+        return stadium_ops_engine.predict(payload.model_dump())
+    except Exception as exc:
+        logger.error("Operations ML inference error: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Operations ML inference failure: {exc}",
+        )
+
+
+@router.post(
+    "/operations",
+    response_model=OperationsPredictionOutput,
+    status_code=status.HTTP_200_OK,
+    summary="Predict Full Stadium Operations State",
+    description=(
+        "Runs all AI operations models: congestion, queue times, attendance, "
+        "risk, emergency severity, staffing, medical demand, vendors, parking, "
+        "traffic, weather impact, and recommendations."
+    ),
+)
+async def predict_operations(payload: PredictionInput):
+    return _predict_operations(payload)
+
+
+@router.post("/crowd/zones", status_code=status.HTTP_200_OK)
+async def predict_zone_congestion(payload: PredictionInput):
+    return _predict_operations(payload)["crowd_congestion"]
+
+
+@router.post("/queues/gates", status_code=status.HTTP_200_OK)
+async def predict_gate_queues(payload: PredictionInput):
+    return _predict_operations(payload)["queue_times"]
+
+
+@router.post("/attendance/forecast", status_code=status.HTTP_200_OK)
+async def predict_attendance_forecast(payload: PredictionInput):
+    return _predict_operations(payload)["attendance_forecast"]
+
+
+@router.post("/risk/zones", status_code=status.HTTP_200_OK)
+async def predict_zone_risk(payload: PredictionInput):
+    return _predict_operations(payload)["crowd_risk"]
+
+
+@router.post("/emergency/severity", status_code=status.HTTP_200_OK)
+async def predict_emergency_severity(payload: PredictionInput):
+    return _predict_operations(payload)["emergency_severity"]
+
+
+@router.post("/security/resources", status_code=status.HTTP_200_OK)
+async def predict_security_resources(payload: PredictionInput):
+    return _predict_operations(payload)["security_recommendation"]
+
+
+@router.post("/medical/demand", status_code=status.HTTP_200_OK)
+async def predict_medical_demand(payload: PredictionInput):
+    return _predict_operations(payload)["medical_demand"]
+
+
+@router.post("/vendors/demand", status_code=status.HTTP_200_OK)
+async def predict_vendor_demand(payload: PredictionInput):
+    return _predict_operations(payload)["vendor_demand"]
+
+
+@router.post("/parking/occupancy", status_code=status.HTTP_200_OK)
+async def predict_parking_occupancy(payload: PredictionInput):
+    return _predict_operations(payload)["parking_occupancy"]
+
+
+@router.post("/traffic/flow", status_code=status.HTTP_200_OK)
+async def predict_traffic_flow(payload: PredictionInput):
+    return _predict_operations(payload)["traffic_flow"]
+
+
+@router.post("/weather/impact", status_code=status.HTTP_200_OK)
+async def predict_weather_impact(payload: PredictionInput):
+    return _predict_operations(payload)["weather_impact"]
+
+
+@router.post("/recommendations", status_code=status.HTTP_200_OK)
+async def predict_recommendations(payload: PredictionInput):
+    return _predict_operations(payload)["recommendations"]

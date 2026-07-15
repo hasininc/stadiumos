@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useOpsStore } from '../store/opsStore';
-import { predictionService, PredictionInput, PredictionOutput } from '../services/prediction';
+import {
+  OperationsPredictionOutput,
+  PredictionInput,
+  PredictionOutput,
+  predictionService,
+} from '../services/prediction';
 
 const PREDICTION_HISTORY_KEY = 'stadiumos_prediction_history';
 
@@ -9,6 +14,7 @@ export const useCrowdPrediction = () => {
   
   // State variables
   const [prediction, setPrediction] = useState<PredictionOutput | null>(null);
+  const [operationsPrediction, setOperationsPrediction] = useState<OperationsPredictionOutput | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<PredictionOutput[]>([]);
@@ -31,6 +37,7 @@ export const useCrowdPrediction = () => {
     const gateOpenCount = Math.max(1, Math.round(gateCapacity / 5));
     const entryRate = Math.round((attendance / 80000) * 450);
     const exitRate = heavyRain ? 80 : 15;
+    const closedGates = closeGateC ? ['GATE_C'] : [];
     
     return {
       attendance,
@@ -54,9 +61,15 @@ export const useCrowdPrediction = () => {
       vip_event: vipArrival,
       special_event: true,
       holiday: false,
-      weekday: 'Sunday'
+      weekday: 'Sunday',
+      security_staff: securityStaff,
+      gate_capacity: gateCapacity,
+      closed_gates: closedGates,
+      incident_count: store.incidents.length,
+      incident_type: store.incidents[0]?.type || 'Operational',
+      forecast_hours: 6
     };
-  }, [attendance, gateCapacity, heavyRain, vipArrival, store.incidents]);
+  }, [attendance, gateCapacity, heavyRain, vipArrival, closeGateC, securityStaff, store.incidents]);
 
   const triggerPrediction = useCallback(async (isRetry = false) => {
     // 1. Cancel in-flight queries
@@ -72,7 +85,20 @@ export const useCrowdPrediction = () => {
     
     try {
       const payload = buildInputPayload();
-      const result = await predictionService.predictCrowd(payload, controller.signal);
+      let result: PredictionOutput;
+
+      try {
+        const operationsResult = await predictionService.predictOperations(payload, controller.signal);
+        result = operationsResult.legacy_crowd;
+        setOperationsPrediction(operationsResult);
+      } catch (operationsError: any) {
+        if (operationsError.name === 'CanceledError' || operationsError.name === 'AbortError') {
+          return;
+        }
+        const crowdOnlyResult = await predictionService.predictCrowd(payload, controller.signal);
+        result = crowdOnlyResult;
+        setOperationsPrediction(null);
+      }
       
       setPrediction(result);
       setError(null);
@@ -90,6 +116,7 @@ export const useCrowdPrediction = () => {
       }
       console.error("FastAPI prediction error:", e);
       setError("Prediction Service Offline");
+      setOperationsPrediction(null);
     } finally {
       setIsLoading(false);
     }
@@ -114,6 +141,7 @@ export const useCrowdPrediction = () => {
 
   return {
     prediction,
+    operationsPrediction,
     isLoading,
     error,
     history,
