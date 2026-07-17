@@ -51,8 +51,8 @@ def test_emergency_endpoints():
     response = client.get("/api/v1/emergencies/dashboard", headers=headers)
     assert response.status_code == 200
     dashboard = response.json()
-    assert "critical_count" in dashboard
-    assert "active_by_type" in dashboard
+    assert "active_incidents_count" in dashboard
+    assert "severity_distribution" in dashboard
     
     # 3. List incidents
     response = client.get("/api/v1/emergencies/", headers=headers)

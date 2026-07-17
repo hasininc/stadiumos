@@ -33,12 +33,16 @@ def test_notification_endpoints():
     headers = get_operator_headers()
     
     # 1. Create a notification (for current user)
+    response = client.get("/api/v1/auth/me", headers=headers)
+    assert response.status_code == 200
+    user_id = response.json()["id"]
+
     notify_payload = {
         "title": "Welcome Alert",
         "message": "Welcome to StadiumOS command console",
         "type": "AIRecommendation",
         "priority": "Normal",
-        "user_id": None
+        "user_id": user_id
     }
     response = client.post("/api/v1/notifications/", json=notify_payload, headers=headers)
     assert response.status_code == 201

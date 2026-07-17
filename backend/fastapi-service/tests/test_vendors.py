@@ -107,7 +107,7 @@ def test_vendor_endpoints():
     assert response.status_code == 201
     restock_order = response.json()
     restock_order_id = restock_order["id"]
-    assert restock_order["status"] == "Pending"
+    assert restock_order["status"] == "Requested"
     
     # 9. Complete restocking order
     response = client.post(f"/api/v1/vendors/restock/{restock_order_id}/complete", headers=headers)

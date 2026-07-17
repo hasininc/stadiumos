@@ -192,4 +192,17 @@ class CrowdService:
         return heatmap_data
 
     def get_historical_logs(self, zone_id: str, limit: int = 100):
-        return self.repo.get_zone_history(zone_id, limit)
+        zone = self.repo.get_zone_by_id(zone_id)
+        capacity = zone.max_capacity if zone else 100
+        histories = self.repo.get_zone_history(zone_id, limit)
+        results = []
+        for h in histories:
+            occupancy = (h.headcount / capacity * 100) if capacity > 0 else 0.0
+            results.append({
+                "id": h.id,
+                "zone_id": h.zone_id,
+                "headcount": h.headcount,
+                "occupancy_pct": round(occupancy, 1),
+                "recorded_at": h.recorded_at
+            })
+        return results
