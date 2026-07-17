@@ -55,13 +55,16 @@ def test_user_profile_management():
     # 5. Update accessibility preferences
     access_payload = {
         "requires_wheelchair": True,
-        "audio_assistance": False,
+        "visual_assistance": False,
+        "audio_assistance": True,
         "special_requirements": "Need close seating"
     }
     response = client.put("/api/v1/users/me/accessibility", json=access_payload, headers=fan_headers)
     assert response.status_code == 200
     updated_access = response.json()
     assert updated_access["accessibility"]["requires_wheelchair"] is True
+    assert updated_access["accessibility"]["visual_assistance"] is False
+    assert updated_access["accessibility"]["audio_assistance"] is True
     assert updated_access["accessibility"]["special_requirements"] == "Need close seating"
 
     # 6. Manage Emergency Contacts

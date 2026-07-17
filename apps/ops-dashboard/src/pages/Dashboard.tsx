@@ -104,7 +104,6 @@ export const Dashboard: React.FC = () => {
     wsClient.connectAll();
 
     const fetchOpsData = async () => {
-      setIsRefreshing(true);
       try {
         const [heatmap, incidents, lowStock] = await Promise.all([
           dashboardService.getCrowdHeatmap(),
@@ -116,8 +115,6 @@ export const Dashboard: React.FC = () => {
         if (lowStock && lowStock.length > 0) store.setInventories(lowStock);
       } catch (e) {
         // Fallbacks silently handle the data absence
-      } finally {
-        setIsRefreshing(false);
       }
     };
 

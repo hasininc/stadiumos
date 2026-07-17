@@ -7,7 +7,6 @@ import {
   predictionService,
 } from '../services/prediction';
 
-const PREDICTION_HISTORY_KEY = 'stadiumos_prediction_history';
 
 export const useCrowdPrediction = () => {
   const store = useOpsStore();

@@ -49,7 +49,7 @@ class ProfileService:
             self.repo.create_accessibility(access)
 
         access.requires_wheelchair = access_in.requires_wheelchair
-        access.visual_assistance = access_in.requires_wheelchair
+        access.visual_assistance = access_in.visual_assistance
         access.audio_assistance = access_in.audio_assistance
         access.special_requirements = access_in.special_requirements
 

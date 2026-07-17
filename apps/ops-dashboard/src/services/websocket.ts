@@ -173,7 +173,6 @@ class WebSocketClient {
 
   private handleIncomingEvent(event: any) {
     const store = useOpsStore.getState() as any;
-    const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     
     // Track last event name in telemetry
     if (store.updateWsMetrics) {
