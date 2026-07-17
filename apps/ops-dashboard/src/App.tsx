@@ -91,7 +91,7 @@ export const App: React.FC = () => {
               {!demoModeActive && <Sidebar />}
               <div className="flex-1 flex flex-col h-full overflow-hidden">
                 <Topbar />
-                <main className="flex-1 overflow-y-auto">
+                <main className="flex-1 overflow-y-auto pb-28">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/simulation" element={<Simulation />} />
