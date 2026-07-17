@@ -7,7 +7,7 @@ from app.core.kafka_client import kafka_client
 from app.core.websocket import ws_manager
 from shared.utils.error_handlers import ValidationError
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 
 class VendorService:
     def __init__(self, db: Session):
@@ -122,7 +122,7 @@ class VendorService:
             self.repo.update_inventory()
 
         order.status = "Completed"
-        order.completed_at = datetime.utcnow()
+        order.completed_at = datetime.now(timezone.utc).replace(tzinfo=None)
         self.repo.update_inventory()
 
         # Publish InventoryRestocked Kafka event

@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.repositories.notification import NotificationRepository
 from app.repositories.user import UserRepository
@@ -180,7 +180,7 @@ class NotificationService:
             payload={
                 "title": broadcast.title,
                 "sent_count": sent_count,
-                "timestamp": datetime.utcnow().isoformat() + "Z"
+                "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             }
         )
         return sent_count

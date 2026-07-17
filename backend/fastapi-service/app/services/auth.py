@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.repositories.user import UserRepository
 from app.models.auth import User, RefreshToken, Role
@@ -50,7 +50,7 @@ class AuthService:
         refresh_token = create_refresh_token(subject=user.id)
 
         # Store Refresh Token in Database
-        expires_at = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
         db_refresh_token = RefreshToken(
             token=refresh_token,
             user_id=user.id,
@@ -70,7 +70,7 @@ class AuthService:
             raise AuthorizationError("Invalid or expired refresh token.")
         
         db_token = self.repo.get_refresh_token(refresh_token_str)
-        if not db_token or db_token.expires_at < datetime.utcnow() or db_token.revoked_at:
+        if not db_token or db_token.expires_at < datetime.now(timezone.utc).replace(tzinfo=None) or db_token.revoked_at:
             raise AuthorizationError("Refresh token has been revoked or expired.")
 
         user = self.repo.get_by_id(db_token.user_id)
@@ -86,7 +86,7 @@ class AuthService:
         # Revoke old refresh token, save new one
         self.repo.revoke_refresh_token(db_token)
 
-        expires_at = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        expires_at = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
         new_db_token = RefreshToken(
             token=new_refresh_token,
             user_id=user.id,

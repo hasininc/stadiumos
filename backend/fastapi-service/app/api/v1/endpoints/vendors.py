@@ -17,7 +17,7 @@ from app.services.vendor import VendorService
 from app.core.websocket import ws_manager
 from typing import List
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger("fastapi")
 
@@ -165,7 +165,7 @@ def get_products_analytics(current_user: User = Depends(vendor_or_ops), db: Sess
     return {
         "most_purchased_category": most_purchased,
         "hourly_sales_average_usd": hourly_avg,
-        "predicted_demand_spike_time": datetime.utcnow().strftime("%H:%M:%SZ"),
+        "predicted_demand_spike_time": datetime.now(timezone.utc).strftime("%H:%M:%SZ"),
     }
 
 @router.get("/{id}", response_model=VendorResponse)

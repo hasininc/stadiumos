@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useOpsStore } from '../store/opsStore';
 import {

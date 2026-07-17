@@ -217,7 +217,6 @@ export const useOpsStore = create<OpsState>((set) => ({
       let crowdMultiplier = 1;
       let targetZone = 'ZONE_GATE_B';
       let weather = state.heavyRain;
-      let evac = state.evacuationActive || false;
       let vip = state.vipArrival;
       
       if (eventKey === 'CROWD_SURGE') {
@@ -284,7 +283,6 @@ export const useOpsStore = create<OpsState>((set) => ({
         priority = 'critical';
         type = 'Evacuation Code Red';
         severity = 'Critical';
-        evac = true;
       }
 
       // Generate simulation changes on crowd zones

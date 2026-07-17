@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy.orm import Session
 from app.repositories.emergency import EmergencyRepository
 from app.repositories.user import UserRepository
@@ -29,7 +29,7 @@ class EmergencyService:
 
     def create_incident(self, actor_id: str, incident_in: IncidentCreate) -> Incident:
         duration = self._calculate_sla_duration(incident_in.severity)
-        sla_due = datetime.utcnow() + duration
+        sla_due = datetime.now(timezone.utc).replace(tzinfo=None) + duration
 
         incident = Incident(
             title=incident_in.title,
@@ -123,7 +123,7 @@ class EmergencyService:
             
             # Recalculate SLA due timer based on escalation timestamp
             duration = self._calculate_sla_duration(new_severity)
-            incident.sla_due_at = datetime.utcnow() + duration
+            incident.sla_due_at = datetime.now(timezone.utc).replace(tzinfo=None) + duration
 
         self.repo.update_incident()
 
@@ -155,7 +155,7 @@ class EmergencyService:
             raise ValidationError("Incident profile not found")
 
         incident.status = "Resolved"
-        incident.resolved_at = datetime.utcnow()
+        incident.resolved_at = datetime.now(timezone.utc).replace(tzinfo=None)
         self.repo.update_incident()
 
         # Log history event

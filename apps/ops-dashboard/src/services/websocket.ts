@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { useOpsStore } from '../store/opsStore';
 
 class WebSocketClient {

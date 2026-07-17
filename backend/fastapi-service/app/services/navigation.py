@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.repositories.navigation import NavigationRepository
 from app.services.routing_engine import AdjacencyGraph, RoutingEngine
@@ -97,7 +97,7 @@ class NavigationService:
             estimated_time_seconds=est_time,
             routing_profile=req.routing_profile,
             confidence_score=0.95,
-            timestamp=datetime.utcnow().isoformat() + "Z"
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         )
 
         # Cache Route & Publish Event
@@ -149,7 +149,7 @@ class NavigationService:
             estimated_time_seconds=est_time,
             routing_profile="Rerouted",
             confidence_score=0.91,
-            timestamp=datetime.utcnow().isoformat() + "Z"
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         )
 
         # Publish RouteUpdated Event

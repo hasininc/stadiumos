@@ -6,7 +6,7 @@ from app.models.auth import User, Role
 from app.models.crowd import Stadium, Zone, OccupancyThreshold, CrowdSnapshot
 from app.models.vendor import Vendor, Product, VendorInventory
 from app.core.security import get_password_hash
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 
 logger = logging.getLogger("fastapi")
@@ -99,7 +99,7 @@ def seed_database() -> None:
                         zone_id=zone.id,
                         headcount=max(0, headcount),
                         occupancy_pct=round(occupancy, 1),
-                        recorded_at=datetime.utcnow() - timedelta(minutes=hours_ago * 15),
+                        recorded_at=datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(minutes=hours_ago * 15),
                     ))
 
             db.commit()
