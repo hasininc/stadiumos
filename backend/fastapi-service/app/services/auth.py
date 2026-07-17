@@ -20,7 +20,16 @@ class AuthService:
             raise ValidationError("User with this email already exists.")
         
         # Assign role based on account type
-        role_name = "Operations Manager" if user_in.account_type == "operator" else "Fan"
+        if user_in.account_type == "operator":
+            role_name = "Operations Manager"
+        elif user_in.account_type == "medical":
+            role_name = "Medical Staff"
+        elif user_in.account_type == "security":
+            role_name = "Security Staff"
+        elif user_in.account_type == "admin":
+            role_name = "Administrator"
+        else:
+            role_name = "Fan"
         default_role = self.repo.get_role_by_name(role_name)
         if not default_role:
             default_role = Role(name=role_name, description=f"{role_name} access")

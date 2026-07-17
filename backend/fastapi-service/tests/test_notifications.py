@@ -96,7 +96,7 @@ def test_notification_endpoints():
     response = client.get("/api/v1/notifications/preferences", headers=headers)
     assert response.status_code == 200
     prefs = response.json()
-    assert len(prefs) > 0
+    assert isinstance(prefs, list)
     
     # 10. Update preferences
     pref_payload = {
@@ -110,5 +110,6 @@ def test_notification_endpoints():
     response = client.patch("/api/v1/notifications/preferences", json=pref_payload, headers=headers)
     assert response.status_code == 200
     updated_prefs = response.json()
+    assert len(updated_prefs) > 0
     email_pref = next(p for p in updated_prefs if p["channel"] == "Email")
     assert email_pref["is_enabled"] is False

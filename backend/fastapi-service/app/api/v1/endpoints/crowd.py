@@ -141,4 +141,4 @@ async def websocket_endpoint(websocket: WebSocket, zone_id: Optional[str] = None
             data = await websocket.receive_text()
             await websocket.send_json({"pong": True, "received": data})
     except WebSocketDisconnect:
-        ws_manager.disconnect(websocket, zone_id)
+        await ws_manager.disconnect(websocket, zone_id)

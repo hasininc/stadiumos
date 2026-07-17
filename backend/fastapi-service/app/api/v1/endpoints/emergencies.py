@@ -176,4 +176,4 @@ async def websocket_endpoint(websocket: WebSocket):
             data = await websocket.receive_text()
             await websocket.send_json({"ping": "received", "data": data})
     except WebSocketDisconnect:
-        ws_manager.disconnect(websocket, None)
+        await ws_manager.disconnect(websocket, None)

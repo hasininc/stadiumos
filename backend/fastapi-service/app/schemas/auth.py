@@ -13,7 +13,7 @@ class RoleBase(BaseModel):
 class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters long")
-    account_type: Literal["fan", "operator"] = "fan"
+    account_type: Literal["fan", "operator", "medical", "security", "admin"] = "fan"
 
 # Output schema for user profiles
 class UserResponse(BaseModel):

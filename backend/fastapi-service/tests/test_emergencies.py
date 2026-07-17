@@ -66,39 +66,46 @@ def test_emergency_endpoints():
     assert response.status_code == 200
     assert response.json()["id"] == incident_id
     
-    # 5. Assign responder
+    # 5. Create a medical responder user and assign them
+    medical_email = f"medical_{uuid.uuid4().hex[:8]}@stadiumos.dev"
+    medical_payload = {
+        "email": medical_email,
+        "password": "SecurePassword123!",
+        "account_type": "medical"
+    }
+    resp = client.post("/api/v1/auth/register", json=medical_payload)
+    assert resp.status_code == 201
+    medical_id = resp.json()["id"]
+
     assign_payload = {
-        "responder_name": "Dr. Sarah Adams",
-        "dispatch_notes": "Dispatched EMT squad 3"
+        "assigned_user_id": medical_id
     }
     response = client.patch(f"/api/v1/emergencies/{incident_id}/assign", json=assign_payload, headers=headers)
     assert response.status_code == 200
     assigned_incident = response.json()
     assert assigned_incident["status"] == "Dispatched"
-    assert assigned_incident["assigned_responder"] == "Dr. Sarah Adams"
+    assert assigned_incident["assigned_user_id"] == medical_id
     
     # 6. Escalate incident
     escalate_payload = {
         "escalation_reason": "Required backup cardiac monitor"
     }
-    response = client.patch(f"/api/v1/emergencies/{incident_id}/escalate", json=escalate_payload, headers=headers)
+    response = client.post(f"/api/v1/emergencies/{incident_id}/escalate", json=escalate_payload, headers=headers)
     assert response.status_code == 200
-    escalated_incident = response.json()
-    # It remains "Dispatched" but logs to history or changes parameters
     
     # 7. Update status manually
     status_payload = {
-        "status": "In Progress"
+        "status": "Active"
     }
     response = client.patch(f"/api/v1/emergencies/{incident_id}/status", json=status_payload, headers=headers)
     assert response.status_code == 200
-    assert response.json()["status"] == "In Progress"
+    assert response.json()["status"] == "Active"
     
     # 8. Resolve incident
     resolve_payload = {
         "resolution_notes": "Patient stabilized and loaded into ambulance."
     }
-    response = client.patch(f"/api/v1/emergencies/{incident_id}/resolve", json=resolve_payload, headers=headers)
+    response = client.post(f"/api/v1/emergencies/{incident_id}/resolve", json=resolve_payload, headers=headers)
     assert response.status_code == 200
     resolved_incident = response.json()
     assert resolved_incident["status"] == "Resolved"

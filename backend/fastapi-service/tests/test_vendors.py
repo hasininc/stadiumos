@@ -119,7 +119,7 @@ def test_vendor_endpoints():
     response = client.get(f"/api/v1/vendors/analytics/vendor?vendor_id={new_vendor_id}", headers=headers)
     assert response.status_code == 200
     analytics = response.json()
-    assert "total_revenue" in analytics
+    assert "revenue_usd" in analytics
     
     # 11. Get product analytics
     response = client.get("/api/v1/vendors/analytics/products", headers=headers)
