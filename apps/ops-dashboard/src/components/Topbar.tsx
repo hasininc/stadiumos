@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useOpsStore } from '../store/opsStore';
 import { dashboardService } from '../services/dashboard';
-import { Clock, Bell, ShieldAlert, Cpu } from 'lucide-react';
+import { Bell } from 'lucide-react';
 
 export const Topbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -10,10 +10,7 @@ export const Topbar: React.FC = () => {
   const wsLatency = useOpsStore((state) => state.wsLatency);
   const wsMsgRate = useOpsStore((state) => state.wsMsgRate);
   const wsLastEvent = useOpsStore((state) => state.wsLastEvent);
-  const crowdMetrics = useOpsStore((state) => state.crowdMetrics);
-  const incidents = useOpsStore((state) => state.incidents);
   const [stadiumName, setStadiumName] = useState('Lusail Stadium');
-  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     dashboardService.getCrowdZones().then((zones: { stadium_id?: string }[]) => {
@@ -21,19 +18,6 @@ export const Topbar: React.FC = () => {
     }).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    const updateTime = () => {
-      const date = new Date();
-      setCurrentTime(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const totalHeadcount = crowdMetrics.reduce((sum, z) => sum + z.headcount, 0);
-  const criticalZones = crowdMetrics.filter((z) => z.status === 'Critical').length;
-  const activeIncidents = incidents.filter((i) => i.status !== 'Resolved').length;
   const userRoles = user?.roles.map((r) => r.name) || [];
 
   const simulationStatus = useOpsStore((state) => state.simulationStatus);

@@ -18,7 +18,6 @@ import {
   ComposedChart,
 } from 'recharts';
 import {
-  Box,
   Typography,
   Button,
   Avatar,
@@ -93,30 +92,7 @@ const vendorDemandData = [
 export const Dashboard: React.FC = () => {
   const store = useOpsStore();
   const [selectedZone, setSelectedZone] = useState<string>('ZONE_GATE_A');
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [simulationAlert, setSimulationAlert] = useState<string | null>(null);
-
-  // Fallback structures to ensure absolute zero empty/blank state
-  const fallbackZones = [
-    { zone_id: 'ZONE_GATE_A', zone_name: 'North Gate A', occupancy_pct: 91, headcount: 1820, status: 'Critical' },
-    { zone_id: 'ZONE_GATE_B', zone_name: 'South Gate B', occupancy_pct: 38, headcount: 750, status: 'Normal' },
-    { zone_id: 'ZONE_VIP', zone_name: 'VIP Club Lounges', occupancy_pct: 31, headcount: 310, status: 'Normal' },
-    { zone_id: 'ZONE_FOOD_E', zone_name: 'East Food Concourse', occupancy_pct: 77, headcount: 1540, status: 'Busy' },
-    { zone_id: 'ZONE_PARK_C', zone_name: 'Parking Sector C', occupancy_pct: 71, headcount: 1410, status: 'Busy' },
-    { zone_id: 'ZONE_EXIT_4', zone_name: 'Northwest Exit 4 corridor', occupancy_pct: 11, headcount: 110, status: 'Normal' },
-  ];
-
-  const fallbackIncidents = [
-    { id: 'inc-01', title: 'Heat Stress Symptom', description: 'Spectator collapsed on Section 102 steps.', type: 'Medical Emergency', severity: 'Critical', status: 'Dispatched', zone_id: 'ZONE_GATE_A', reported_at: new Date(Date.now() - 360000).toISOString() },
-    { id: 'inc-02', title: 'Turnstile A4 Sensor Lag', description: 'Sensor latency causing wait time spike.', type: 'System Error', severity: 'Medium', status: 'Investigating', zone_id: 'ZONE_GATE_A', reported_at: new Date(Date.now() - 900000).toISOString() },
-    { id: 'inc-03', title: 'Unattended Luggage', description: 'Bag left near East Concourse restrooms.', type: 'Security Alarm', severity: 'High', status: 'Reported', zone_id: 'ZONE_FOOD_E', reported_at: new Date(Date.now() - 1500000).toISOString() },
-  ];
-
-  const fallbackRecommendations = [
-    { agent_name: 'Crowd Intelligence', response_text: 'Open North Gate A Overflow turnstiles 5 & 6 immediately. Ingress rate at North corridor exceeds safe limits by 18%.', recommended_actions: ['Open overflow gate', 'Reroute staff'] },
-    { agent_name: 'Medical Logistics Dispatcher', response_text: 'Reroute Medical Responder Team Beta to Section 102 for heat stroke response. Shortest path calculated: Corridor B3.', recommended_actions: ['Deploy Team Beta'] },
-    { agent_name: 'Concessions Forecaster', response_text: 'Beverage stocks at East Concourse Kiosk 3 will deplete in 15 minutes. Dispatch stock replenishing runner from central hub.', recommended_actions: ['Dispatch replenish runner'] }
-  ];
 
   // Sync display with global store
   const displayZones = store.crowdMetrics;

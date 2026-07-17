@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useOpsStore } from '../store/opsStore';
 import { useCrowdPrediction } from '../hooks/useCrowdPrediction';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   TrendingUp,
   Cpu,
@@ -16,43 +15,20 @@ import {
   CloudRain,
   Activity as AnomalyIcon,
   CheckCircle,
-  HelpCircle,
 } from 'lucide-react';
 import {
-  AreaChart,
-  Area,
   ResponsiveContainer,
   XAxis,
   YAxis,
   Tooltip as RechartsTooltip,
-  BarChart,
-  Bar,
   LineChart,
   Line,
-  CartesianGrid,
   Legend,
 } from 'recharts';
 
 // ──────────────────────────────────────────────
 // Static Analytics Chart Data
 // ──────────────────────────────────────────────
-const historicalAttendanceData = [
-  { time: '17:00', attendance: 12000, accuracy: 96.5, risk: 20 },
-  { time: '17:15', attendance: 25000, accuracy: 97.1, risk: 35 },
-  { time: '17:30', attendance: 42000, accuracy: 97.8, risk: 50 },
-  { time: '17:45', attendance: 61000, accuracy: 98.2, risk: 65 },
-  { time: '18:00', attendance: 73000, accuracy: 98.5, risk: 78 },
-  { time: 'Live', attendance: 78550, accuracy: 97.2, risk: 84 },
-];
-
-const queueTimeTrendData = [
-  { time: '17:00', gateA: 8, gateB: 12, gateC: 5, gateD: 6 },
-  { time: '17:15', gateA: 14, gateB: 19, gateC: 9, gateD: 8 },
-  { time: '17:30', gateA: 22, gateB: 28, gateC: 16, gateD: 11 },
-  { time: '17:45', gateA: 19, gateB: 35, gateC: 22, gateD: 15 },
-  { time: '18:00', gateA: 15, gateB: 42, gateC: 31, gateD: 18 },
-  { time: 'Live', gateA: 12, gateB: 48, gateC: 29, gateD: 14 },
-];
 
 export const PredictionCenter: React.FC = () => {
   const store = useOpsStore();
@@ -666,7 +642,7 @@ export const PredictionCenter: React.FC = () => {
                 </div>
               ) : (
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={history.map((h, i) => ({
+                  <LineChart data={history.map((h) => ({
                     time: new Date(h.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
                     score: h.congestion_score,
                     queue: h.queue_prediction

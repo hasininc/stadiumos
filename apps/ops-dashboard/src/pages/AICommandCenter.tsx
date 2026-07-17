@@ -6,7 +6,6 @@ import {
   Mic,
   Bot,
   User,
-  Clock,
   Cpu,
   RefreshCw,
   Shield,
@@ -27,7 +26,6 @@ import {
   Signal,
   Gauge,
   Loader2,
-  MessageSquare,
   Globe,
 } from 'lucide-react';
 import api from '../services/api';

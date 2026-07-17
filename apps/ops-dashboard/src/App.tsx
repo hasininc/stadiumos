@@ -23,9 +23,6 @@ import { Settings } from './pages/Settings';
 
 export const App: React.FC = () => {
   const demoModeActive = useOpsStore((state) => state.demoModeActive);
-  const simulationStatus = useOpsStore((state) => state.simulationStatus);
-  const simulationSpeed = useOpsStore((state) => state.simulationSpeed);
-  const triggerEvent = useOpsStore((state) => state.triggerEvent);
   const notifications = useOpsStore((state) => state.notifications);
   const removeNotification = useOpsStore((state) => state.removeNotification);
 

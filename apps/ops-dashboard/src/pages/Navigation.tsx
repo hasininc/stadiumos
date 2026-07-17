@@ -7,18 +7,13 @@ import {
   RefreshCw,
   Layers,
   Camera,
-  Users,
   TrendingUp,
-  MapPin,
   AlertTriangle,
   HeartPulse,
   Shield,
-  Activity,
   Clock,
   Compass,
   Phone,
-  Eye,
-  Info,
   Check,
   Zap,
 } from 'lucide-react';
@@ -515,8 +510,6 @@ export const Navigation: React.FC = () => {
   // Aggregates for Right Panel
   const totalOccupancy = zones.reduce((sum, z) => sum + z.occupancy, 0);
   const totalMax = zones.reduce((sum, z) => sum + z.maxCapacity, 0);
-  const criticalGates = zones.filter(z => z.category === 'gate' && z.risk === 'red').length;
-  const criticalStands = zones.filter(z => z.category === 'stand' && (z.risk === 'red' || z.risk === 'orange')).length;
 
   return (
     <div className="flex h-full w-full overflow-hidden font-sans text-[#F8FAFC]">
