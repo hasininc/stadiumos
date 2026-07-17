@@ -369,7 +369,7 @@ export const Dashboard: React.FC = () => {
 
               {/* Heatmap Visual Canvas */}
               <div className="flex-1 flex flex-col justify-center items-center py-6">
-                <div className="relative w-full max-w-[460px] aspect-[4/3] border border-white/5 rounded-full p-6 bg-[#180F25]/50 flex items-center justify-center">
+                <div className="relative w-full max-w-[580px] aspect-[4/3] border border-white/5 rounded-full p-6 bg-[#180F25]/50 flex items-center justify-center">
                   
                   {/* Outer Rings representing Stand Sections */}
                   <div className="absolute inset-4 border border-white/5 rounded-full"></div>
