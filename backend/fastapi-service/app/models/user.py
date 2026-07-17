@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Table, JSON
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship as db_relationship, backref
 from app.db.session import Base
 
 # Association Table for User <-> Language (Many-to-Many)
@@ -29,7 +29,7 @@ class UserProfile(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
     # Relationships
-    user = relationship("User", backref=backref("profile", uselist=False))
+    user = db_relationship("User", backref=backref("profile", uselist=False))
 
 class AccessibilityPreference(Base):
     __tablename__ = "accessibility_preferences"
@@ -41,7 +41,7 @@ class AccessibilityPreference(Base):
     special_requirements = Column(String(512), nullable=True)
 
     # Relationships
-    user = relationship("User", backref=backref("accessibility", uselist=False))
+    user = db_relationship("User", backref=backref("accessibility", uselist=False))
 
 class EmergencyContact(Base):
     __tablename__ = "emergency_contacts"
@@ -52,8 +52,12 @@ class EmergencyContact(Base):
     relationship_type = Column(String(100), nullable=False)
     phone_number = Column(String(50), nullable=False)
 
+    @property
+    def relationship(self) -> str:
+        return self.relationship_type
+
     # Relationships
-    user = relationship("User", backref="emergency_contacts")
+    user = db_relationship("User", backref="emergency_contacts")
 
 class UserActivityLog(Base):
     __tablename__ = "user_activity_logs"
@@ -66,7 +70,7 @@ class UserActivityLog(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
 
     # Relationships
-    user = relationship("User", backref="activity_logs")
+    user = db_relationship("User", backref="activity_logs")
 
 class UserAuditLog(Base):
     __tablename__ = "user_audit_logs"

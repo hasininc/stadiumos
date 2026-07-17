@@ -60,7 +60,7 @@ class ProfileService:
         new_contact = EmergencyContact(
             user_id=user_id,
             contact_name=contact_in.contact_name,
-            relationship=contact_in.relationship,
+            relationship_type=contact_in.relationship,
             phone_number=contact_in.phone_number
         )
         return self.repo.create_emergency_contact(new_contact)

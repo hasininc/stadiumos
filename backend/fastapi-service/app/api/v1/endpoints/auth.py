@@ -61,7 +61,7 @@ def refresh(refresh_token: str, response: Response, db: Session = Depends(get_db
     return tokens
 
 @router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout(refresh_token: str, response: Response, db: Session = Depends(get_db)):
+def logout(refresh_token: str, db: Session = Depends(get_db)):
     """
     Revoke user session.
     
@@ -69,8 +69,9 @@ def logout(refresh_token: str, response: Response, db: Session = Depends(get_db)
     """
     service = AuthService(db)
     service.revoke_token(refresh_token)
-    response.delete_cookie(key="stadiumos_refresh_token")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    res = Response(status_code=status.HTTP_204_NO_CONTENT)
+    res.delete_cookie(key="stadiumos_refresh_token")
+    return res
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):

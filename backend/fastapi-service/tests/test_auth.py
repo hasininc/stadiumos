@@ -27,8 +27,8 @@ def test_auth_flow_complete():
 
     # 2. Register duplicate email should return error
     response = client.post("/api/v1/auth/register", json=register_payload)
-    assert response.status_code == 422
-    assert "already exists" in response.json()["detail"]
+    assert response.status_code == 400
+    assert "already exists" in response.json()["message"]
 
     # 3. Login with invalid credentials
     login_invalid = {
@@ -36,8 +36,8 @@ def test_auth_flow_complete():
         "password": "WrongPassword!"
     }
     response = client.post("/api/v1/auth/login", json=login_invalid)
-    assert response.status_code == 422
-    assert "Invalid email or password" in response.json()["detail"]
+    assert response.status_code == 400
+    assert "Invalid email or password" in response.json()["message"]
 
     # 4. Login with valid credentials
     login_valid = {
